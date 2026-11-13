@@ -1,0 +1,1253 @@
+--- a/native/mod_playerbots.cpp
++++ b/native/mod_playerbots.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ #include "NativeBackgroundTraining.h"
+ #include "NativeShadowCollectorV18.h"
+ #include "../../ThroneSiegeAudit/twins-nightmare-v10/TwinsNightmare.h"
+@@ -132,15 +133,17 @@
+         TC_LOG_INFO("playerbots", "Travel nodes: enableTravelNodes=%d", sPlayerbotAIConfig->enableTravelNodes ? 1 : 0);
+         if (sPlayerbotAIConfig->enableTravelNodes)
+             sTravelNodeMap.LoadOrGenerate();
+-    }
+-
+-    void OnShutdown() override { NativeBackgroundTraining::Shutdown(); }
++        AutonomousPlayerAuditV19::Startup();
++    }
++
++    void OnShutdown() override { NativeBackgroundTraining::Shutdown(); AutonomousPlayerAuditV19::Shutdown(); }
+ 
+     void OnUpdate(uint32 diff) override
+     {
+         // AC Script/Playerbots.cpp:466-468: run the operations bot AI queued from the map-update threads
+         // (world thread, after sMapMgr->Update).
+         NativeBackgroundTraining::WorldUpdate(diff);
++        AutonomousPlayerAuditV19::WorldUpdate(diff);
+         PlayerbotWorldThreadProcessor::instance().Update(diff);
+         // #148: AC RandomBotLevelMgr.cpp:1126-1129 (replaces the fork-only RandomPlayerbotBracketMgr, broken since #808).
+         RandomBotLevelMgrUpdate(diff);
+@@ -265,6 +268,7 @@
+ 
+     void OnPlayerbotLogout(Player* player) override
+     {
++        AutonomousPlayerAuditV19::OnLogout(player);
+         if (player) if (auto ai = GET_PLAYERBOT_AI(player)) ShadowCollectorV18::ResetActor(ai);
+         NativeBackgroundTraining::OnAiDestroyed(player);
+         if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))
+@@ -318,14 +322,14 @@
+ {
+ public:
+     PlayerbotsPlayerScript() : PlayerScript("PlayerbotsPlayerScript") {}
+-    void OnLogout(Player* p) override { if(p) { if (auto ai = GET_PLAYERBOT_AI(p)) ShadowCollectorV18::ResetActor(ai); NativeBackgroundTraining::OnAiDestroyed(p); TwinsNightmareV10::ForgetPlayer(p); JinrokhTauntV9::ForgetTank(p); HeartTerraceActions::ForgetHeartActor(p->GetGUID().GetRawValue()); PrisonDutyV8::ForgetPrisonActor(reinterpret_cast<uintptr_t>(p),p->GetGUID().GetRawValue()); } }
++    void OnLogout(Player* p) override { if(p) { AutonomousPlayerAuditV19::OnLogout(p); if (auto ai = GET_PLAYERBOT_AI(p)) ShadowCollectorV18::ResetActor(ai); NativeBackgroundTraining::OnAiDestroyed(p); TwinsNightmareV10::ForgetPlayer(p); JinrokhTauntV9::ForgetTank(p); HeartTerraceActions::ForgetHeartActor(p->GetGUID().GetRawValue()); PrisonDutyV8::ForgetPrisonActor(reinterpret_cast<uintptr_t>(p),p->GetGUID().GetRawValue()); } }
+ 
+     // #148: AC RandomBotLevelMgr.cpp:1151-1156 (ResetBotLevel on level-up).
+     void OnLevelChanged(Player* player, uint8 oldLevel) override { RandomBotLevelMgrOnLevelChanged(player, oldLevel); }
+ 
+     void OnLogin(Player* player) override
+     {
+-        if (player) if (auto ai = GET_PLAYERBOT_AI(player)) { ShadowCollectorV18::ResetActor(ai); NativeBackgroundTraining::OnAiCreated(player); }
++        if (player) if (auto ai = GET_PLAYERBOT_AI(player)) { ShadowCollectorV18::ResetActor(ai); NativeBackgroundTraining::OnAiCreated(player); AutonomousPlayerAuditV19::OnLogin(player); }
+         TwinsNightmareV10::ForgetPlayer(player); JinrokhTauntV9::ForgetTank(player); HeartTerraceActions::ForgetHeartActor(player->GetGUID().GetRawValue()); PrisonDutyV8::ForgetPrisonActor(reinterpret_cast<uintptr_t>(player),player->GetGUID().GetRawValue());
+         if (!player->GetSession()->IsBot())
+         {
+@@ -442,6 +446,7 @@
+             playerbotMgr->UpdateAI(diff);
+         }
+         NativeBackgroundTraining::ObservePlayer(player);
++        AutonomousPlayerAuditV19::Observe(player);
+     }
+ };
+ void AddSC_mod_playerbots()
+--- a/native/NativeBackgroundTraining.cpp
++++ b/native/NativeBackgroundTraining.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ // GPL-2.0-or-later. See INTEGRATION.md for ownership, verified call sites and gaps.
+ #include "NativeBackgroundTraining.h"
+ #include "NativeTrainingRoster.h"
+@@ -195,7 +196,7 @@
+             Player* p=ObjectAccessor::FindPlayer(ObjectGuid(bound.guid));
+             // The processor runs after map workers join. Recheck self state and world-owned registry/LFG.
+             // No Map/InstanceScript traversal here; proximity and encounter evidence is map-owned above.
+-            if (!NativeBot(p) || !sRandomPlayerbotMgr->IsRandomBot(p) || !Quiet(p) ||
++            if (AutonomousPlayerAuditV19::Reserved(p) || !NativeBot(p) || !sRandomPlayerbotMgr->IsRandomBot(p) || !Quiet(p) ||
+                 GET_PLAYERBOT_AI(p)->GetMaster() || p->GetGroup() || p->GetOriginalGroup() || p->GetGroupInvite() ||
+                 PlayerbotHolder::IsRaidOwnedBot(p->GetGUID()) || PlayerbotHolder::IsManagedLogin(p->GetGUID()) ||
+                 sLFGMgr->GetActiveState(p->GetGUID())!=lfg::LFG_STATE_NONE || Role(p)!=bound.role ||
+@@ -375,6 +376,7 @@
+     s.generations.erase(id); s.observations.erase(id);
+ }
+ void ObservePlayer(Player* player) {
++    if (AutonomousPlayerAuditV19::Reserved(player)) return;
+     auto& s=S(); if (!s.observing.load() || !player || !player->IsInWorld()) return;
+     Observation x; x.guid=player->GetGUID().GetRawValue(); x.at=Now();
+     if (!NativeBot(player)) {
+@@ -427,7 +429,7 @@
+     for (auto it=sRandomPlayerbotMgr->GetPlayerBotsBegin();it!=sRandomPlayerbotMgr->GetPlayerBotsEnd();++it)
+         online.insert(it->first);
+     std::vector<Observation> pool;
+-    for (auto const& item:observations) if (online.count(item.first) && Selectable(item.second,now)) pool.push_back(item.second);
++    for (auto const& item:observations) if (!AutonomousPlayerAuditV19::ReservedGuid(item.first) && online.count(item.first) && Selectable(item.second,now)) pool.push_back(item.second);
+     {
+         std::lock_guard<std::mutex> lock(s.diagnosticMutex);
+         s.diagnostic.available=unsigned(pool.size()); s.diagnostic.tanks=s.diagnostic.healers=s.diagnostic.damage=0;
+--- a/native/AI/PlayerbotAI.cpp
++++ b/native/AI/PlayerbotAI.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ #include "DurumuDuty.h"
+ #include "NativeShadowCollectorV18.h"
+ #include "ResponseBindingV18.h"
+@@ -1940,6 +1941,10 @@
+         bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
+         return false;
+ 
++    // V19: one verified existing native actor keeps full/background path activity.
++    // The native invalid-session/world/teleport guard above remains authoritative.
++    if (AutonomousPlayerAuditV19::Owns(bot)) return true;
++
+     // always allow packet handling (e.g. group invites, trade, loot, friend requests etc)
+     if (activityType == PACKET_ACTIVITY)
+         return true;
+@@ -2142,6 +2147,7 @@
+ // AC Bot/PlayerbotAI.cpp:4990-5008 (ms timer with a per-bot 0-499 ms stagger instead of a whole-second time(nullptr))
+ bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) checkNow = true; // Re-evaluate native legality; never reuse an actor activity cache across transitions.
+     const int activityIndex = static_cast<int>(activityType);
+ 
+     if (!_allowActiveCheckTimer[activityIndex])
+--- a/native/Manager/RandomPlayerbotMgr.cpp
++++ b/native/Manager/RandomPlayerbotMgr.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+ * This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
+ *
+@@ -487,6 +488,7 @@
+ 
+ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
+ {
++    if (AutonomousPlayerAuditV19::ReservedGuid(ObjectGuid(HighGuid::Player, bot).GetRawValue())) return false;
+     Player* player = GetPlayerBot(bot);
+     PlayerbotAI* botAI = player ? GET_PLAYERBOT_AI(player) : nullptr;
+     ObjectGuid botGUID = ObjectGuid::Create<HighGuid::Player>(bot);
+@@ -611,6 +613,7 @@
+ 
+ bool RandomPlayerbotMgr::ProcessBot(Player* player)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(player)) return false;
+     ObjectGuid bot = player->GetGUID();
+ 
+     if (player->InBattleground())
+@@ -723,6 +726,7 @@
+ 
+ void RandomPlayerbotMgr::TagForRandomize(Player* bot, uint32 level)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     ObjectGuid::LowType guid = bot->GetGUID().GetCounter();
+ 
+     SetValue(bot, "level", level);
+@@ -775,6 +779,7 @@
+ // calls AC RandomTeleportForLevel makes - and it sets the bot's homebind to where it landed.
+ bool RandomTeleportToLocs(Player* bot, std::vector<WorldLocation> const& locs, bool hearth = false, bool revive = false)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     if (!revive && DynamicPopulation::DeferRandomRelocation(bot)) return false;
+     if (bot->IsBeingTeleported() || !bot->IsInWorld())
+         return false;
+@@ -866,6 +871,7 @@
+ 
+ void RandomPlayerbotMgr::Revive(Player* player)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(player)) return;
+     uint64 bot = player->GetGUID();
+ 
+     SetEventValue(bot, "dead", 0, 0);
+@@ -888,6 +894,7 @@
+ 
+ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     uint32 maxLevel = sPlayerbotAIConfig->randomBotMaxLevel;
+     maxLevel = std::min(maxLevel, sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+ 
+@@ -972,6 +979,7 @@
+ 
+ void RandomPlayerbotMgr::Randomize(Player* bot)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     // #808: 1:1 with AC RandomPlayerbotMgr::Randomize (Bot/RandomPlayerbotMgr.cpp:1956-1975) for every random bot,
+     // whatever DisableRandomLevels says (the old "else" path below the branch - GetValue(bot, "level") +
+     // factory.Randomize(false) + Refresh + teleport - has no AC counterpart).
+@@ -1146,6 +1154,7 @@
+ 
+ void RandomPlayerbotMgr::Refresh(Player* bot)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+     if (!botAI)
+         return;
+@@ -1219,6 +1228,7 @@
+     if (PlayerbotHolder::IsRaidOwnedBot(guid) || PlayerbotHolder::IsRaidProvisioningAccount(sCharacterCache->GetCharacterAccountIdByGuid(guid))) return false;
+     if (!sPlayerbotAIConfig->IsInRandomAccountList(sCharacterCache->GetCharacterAccountIdByGuid(guid)))
+         return false;
++    if (AutonomousPlayerAuditV19::ReservedGuid(guid.GetRawValue())) return true; // Account and raid exclusions above remain authoritative.
+     if (std::find(_currentBots.begin(), _currentBots.end(), bot) != _currentBots.end())
+         return true;
+     return false;
+@@ -1622,6 +1632,7 @@
+ // AC :69-110. AC sLFGMgr->GetState(guid) = GetActiveState(guid) on 5.4.8 (queues per id, PlayerbotAI.cpp:1618).
+ bool IsBotSafeForLevelReset(Player* bot)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     if (!bot || !bot->GetSession() || bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
+         return false;
+ 
+@@ -1929,6 +1940,7 @@
+ // AC :290-364. Death Knights are never assigned below CONFIG_START_HEROIC_PLAYER_LEVEL.
+ void RandomBotLevelMgr::AdjustBotToRange(Player* bot, int targetRangeIndex, TeamId team)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->isLogingOut() ||
+         bot->IsDuringRemoveFromWorld())
+         return;
+@@ -2451,6 +2463,7 @@
+ // AC :827-848. Resets a bot to ResetToLevel (or the Death Knight starting level) via a full factory randomize.
+ void RandomBotLevelMgr::ResetBot(Player* player, uint8 currentLevel)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(player)) return;
+     uint8 levelToResetTo = LevelCfg().resetBotLevelResetTo;
+ 
+     uint8 dkMinLevel = static_cast<uint8>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
+@@ -2472,6 +2485,7 @@
+ // AC :850-871. Sends a bot straight to SkipToLevel (or the Death Knight starting level).
+ void RandomBotLevelMgr::SkipBotLevel(Player* player, uint8 currentLevel)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(player)) return;
+     uint8 levelToSkipTo = LevelCfg().resetBotLevelSkipTo;
+ 
+     uint8 dkMinLevel = static_cast<uint8>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
+@@ -2583,6 +2597,7 @@
+ // AC :961-1012
+ void RandomBotLevelMgr::OnBotLogin(Player* player)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(player)) return;
+     RandomBotLevelConfig const& c = LevelCfg();
+     if (!sRandomPlayerbotMgr->IsRandomBot(player))
+         return;
+@@ -2636,6 +2651,7 @@
+ // AC :1014-1081
+ void RandomBotLevelMgr::OnBotLevelChanged(Player* player, uint8 oldLevel)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(player)) return;
+     RandomBotLevelConfig const& c = LevelCfg();
+     if (!sRandomPlayerbotMgr->IsRandomBot(player))
+         return;
+@@ -2777,6 +2793,7 @@
+ 
+ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) { AutonomousPlayerAuditV19::OnLogin(bot); return; }
+     DynamicPopulation::OnRandomBotLogin(bot);
+     auto maxAllowed = sRandomPlayerbotMgr->GetMaxAllowedBotCount();
+     TC_LOG_INFO("playerbots", "%u/%u Bot %s logged in - Active spec tab: %u Spec: %u", playerBots.size(), maxAllowed, bot->GetName().c_str(), (uint32)bot->GetActiveSpec(), (uint32)bot->GetSpecialization());
+@@ -2929,6 +2946,10 @@
+ 
+ void RandomPlayerbotMgr::OnPlayerLogin(Player* player)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(player)) {
++        if (player->GetSession() && player->GetSession()->IsBot()) player->Unit::SetPvP(sWorld->IsPvPRealm());
++        return; // No ambient master assignment or level reset for this actor.
++    }
+     if (player && !IsRandomBot(player)) DynamicPopulation::InvalidateObservers();
+     // #148: AC RandomBotLevelPlayerScript::OnPlayerLogin (RandomBotLevelMgr.cpp:1144-1149). Runs for every player; for a
+     // bot it runs before PlayerbotHolder::OnBotLogin attaches the AI (PlayerbotMgr.cpp HandlePlayerBotLoginCallback), as
+@@ -3698,6 +3719,7 @@
+ 
+ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     if (!bot || DynamicPopulation::DeferRandomRelocation(bot)) return;
+ 
+     // AC RandomTeleportForLevel (Bot/RandomPlayerbotMgr.cpp:1804-1832): never touch a bot in an active BG/arena.
+--- a/native/Manager/PlayerbotMgr.h
++++ b/native/Manager/PlayerbotMgr.h
+@@ -48,6 +48,8 @@
+     virtual ~PlayerbotHolder() {};
+ 
+     void AddPlayerBot(ObjectGuid guid, uint32 masterAccountId);
++    bool AddAutonomousPlayerBot(ObjectGuid guid); // Same native queue, exact configured managed actor only.
++    static bool IsBotLoginPending(ObjectGuid guid); // Existing cross-holder lease, no timeout clearing.
+     // Returns false for synchronous refusal; no callback in that case. A true return
+     // guarantees one terminal callback when the DB callback is processed.
+     bool AddManagedPlayerBot(ObjectGuid guid, std::shared_ptr<ManagedBotLogin> const& token);
+--- a/native/Manager/PlayerbotMgr.cpp
++++ b/native/Manager/PlayerbotMgr.cpp
+@@ -1,4 +1,5 @@
+-﻿/*
++﻿#include "AutonomousPlayerAudit.h"
++/*
+ * This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
+ *
+ * This program is free software; you can redistribute it and/or modify it
+@@ -162,6 +163,18 @@
+     PlayerbotHolder* GetPlayerbotHolder() { return playerbotHolder; }
+ };
+ 
++bool PlayerbotHolder::IsBotLoginPending(ObjectGuid guid)
++{
++    std::lock_guard<std::mutex> lock(botLoginLeaseMutex);
++    auto found = botLoginLeases.find(guid);
++    return found != botLoginLeases.end() && !found->second.expired();
++}
++
++bool PlayerbotHolder::AddAutonomousPlayerBot(ObjectGuid guid)
++{
++    return AutonomousPlayerAuditV19::CanRequestLogin(guid.GetRawValue()) && QueuePlayerBot(guid, 0);
++}
++
+ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId)
+ {
+     QueuePlayerBot(playerGuid, masterAccountId);
+@@ -176,6 +189,8 @@
+ bool PlayerbotHolder::QueuePlayerBot(ObjectGuid playerGuid, uint32 masterAccountId,
+     std::shared_ptr<ManagedBotLogin> const& token, uint32 addclassLevel)
+ {
++    if (AutonomousPlayerAuditV19::ReservedGuid(playerGuid.GetRawValue()) &&
++        (masterAccountId || token || addclassLevel || !AutonomousPlayerAuditV19::CanRequestLogin(playerGuid.GetRawValue()))) return false;
+     if (token && (!ManagedValid(token) || !token->complete)) return false;
+     // Dedicated admission serializes against this holder's pending ambient batch.
+     // Ordinary holders wait while a managed query owns its lease, including cancellation.
+@@ -276,6 +291,8 @@
+             sAddclassPending.erase(guid);
+         }
+     } cleanup{botLoading, botGUID};
++    if (AutonomousPlayerAuditV19::ReservedGuid(botGUID.GetRawValue()) &&
++        (managed || holder.GetMasterAccountId() || !AutonomousPlayerAuditV19::CanRequestLogin(botGUID.GetRawValue(), botAccountId))) return;
+     if ((managed && !ManagedValid(managed)) || ObjectAccessor::FindConnectedPlayer(botGUID) ||
+         sCharacterCache->GetCharacterAccountIdByGuid(botGUID) != botAccountId ||
+         (!managed && (IsRaidOwnedBot(botGUID) || IsRaidProvisioningAccount(botAccountId))) ||
+@@ -301,6 +318,19 @@
+             (managed->verifyCharacterRow && !managed->verifyCharacterRow(row)))
+         {
+             managed->complete(nullptr, ManagedBotLoginResult::Refused);
++            return;
++        }
++    }
++
++    if (AutonomousPlayerAuditV19::ReservedGuid(botGUID.GetRawValue()))
++    {
++        // Reuse the already-loaded native login row. Never consume reset/service flags for the actor.
++        PreparedQueryResult row = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_FROM);
++        if (holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SERVICES) || !row ||
++            (*row)[0].GetUInt32() != botGUID.GetCounter() || (*row)[1].GetUInt32() != botAccountId ||
++            (*row)[34].GetUInt16() != 0)
++        {
++            TC_LOG_INFO("playerbots", "[AUTONOMOUS_AUDIT] native_login_row_refused actor=%u", botGUID.GetCounter());
+             return;
+         }
+     }
+@@ -689,6 +719,7 @@
+         {
+             botAI->TellMaster("Goodbye!");
+             { std::unique_lock<std::shared_mutex> guard(playerBotsMutex); playerBots.erase(guid); }                  // deletes bot player ptr inside this WorldSession PlayerBotMap
++            if (AutonomousPlayerAuditV19::Reserved(bot) && botWorldSessionPtr->IsBot() && !botAI->IsRealPlayer()) { sPlayerbotsMgr->RemovePlayerBotData(guid, true); delete botAI; }
+             botWorldSessionPtr->LogoutPlayer(true);  // this will delete the bot Player object and PlayerbotAI object
+             delete botWorldSessionPtr;               // finally delete the bot's WorldSession
+         }
+@@ -728,6 +759,7 @@
+ 
+         { std::unique_lock<std::shared_mutex> guard(playerBotsMutex); playerBots.erase(guid); }  // deletes bot player ptr inside this WorldSession PlayerBotMap
+ 
++        if (AutonomousPlayerAuditV19::Reserved(bot) && bot->GetSession() && bot->GetSession()->IsBot() && !botAI->IsRealPlayer()) sPlayerbotsMgr->RemovePlayerBotData(guid, true);
+         delete botAI;
+     }
+ }
+--- a/native/Factory/BotFactory.cpp
++++ b/native/Factory/BotFactory.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ #include "BotFactory.h"
+ 
+ #include <algorithm>
+@@ -63,7 +64,7 @@
+     }
+ }
+ 
+-void BotFactory::CancelAuras() { bot->RemoveAllAuras(); }
++void BotFactory::CancelAuras() { if (AutonomousPlayerAuditV19::Reserved(bot)) return; bot->RemoveAllAuras(); }
+  
+ void BotFactory::Init()
+ {
+@@ -489,6 +490,7 @@
+ // Water (58257); level 90: Black Pepper Ribs and Shrimp (74646) etc. (drink: the level 85 waters and brews, 81-90 window).
+ void BotFactory::InitFood()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     if (HasFoodCheat())
+         return;
+ 
+@@ -550,6 +552,7 @@
+ // Ammo (AC InitAmmo :3868) is gone for the same reason (5.0.4), so it is not ported.
+ void BotFactory::InitReagents()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     std::vector<std::pair<uint32, uint32>> items;
+     switch (bot->GetClass())
+     {
+@@ -579,6 +582,7 @@
+ // / Greater Mana Potion (6149); level 85-90: Master Healing Potion (76097) / Master Mana Potion (76098).
+ void BotFactory::InitPotions()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     uint32 effects[] = {SPELL_EFFECT_HEAL, SPELL_EFFECT_ENERGIZE};
+     for (uint8 i = 0; i < 2; ++i)
+     {
+@@ -617,6 +621,7 @@
+ // so the rogue list is empty.
+ void BotFactory::InitConsumables()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     Specializations const specTab = AiFactory::GetPlayerSpecTab(bot);
+     std::vector<std::pair<uint32, uint32>> items;
+ 
+@@ -683,6 +688,7 @@
+ // InitConsumables stocks. AC's ITEM_SUBCLASS_FOOD is 5.4.8's ITEM_SUBCLASS_FOOD_DRINK.
+ void BotFactory::CleanupConsumables()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     std::vector<Item*> itemsToDelete;
+ 
+     std::vector<Item*> items;
+@@ -754,6 +760,7 @@
+ 
+ void BotFactory::Prepare()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     if (bot->isDead())
+         bot->ResurrectPlayer(1.0f, false);
+  
+@@ -776,6 +783,7 @@
+  
+ void BotFactory::Randomize(bool incremental)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     TC_LOG_INFO("playerbots", "%s randomizing %s (level %u class = %s)...", (incremental ? "Incremental" : "Full"),
+             bot->GetName().c_str(), level, ClassToString((Classes)bot->GetClass()).c_str());
+ 
+@@ -879,6 +887,7 @@
+  
+ void BotFactory::Refresh()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     // #707: AC PlayerbotFactory::Refresh (Bot/Factory/PlayerbotFactory.cpp:1060) empties the bags on every refresh -
+     // the 1-5 h teleport cycle, revive and LFG join (RandomPlayerbotMgr::Refresh, AC :2170-2199). It is what keeps an AC
+     // random bot's bags from filling up; nothing else does (AC's "maintenance" strategy is off, AiFactory.cpp:630).
+@@ -909,6 +918,7 @@
+  
+ void BotFactory::InitPet()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     Pet* pet = bot->GetPet();
+ 
+     /*if (bot->GetClass() == CLASS_HUNTER)
+@@ -1136,6 +1146,7 @@
+ 
+ void BotFactory::InitTalentsTree(bool reset)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     /*std::map<uint32, std::list<const TalentEntry*>> talents_dbc;
+     for (auto entry = sTalentStore.begin(); entry != sTalentStore.end(); ++entry)
+     {
+@@ -1246,6 +1257,7 @@
+ /// Idempotent: a tier that already holds a talent is left alone.
+ void BotFactory::InitTalentTiers()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     uint32 const tab = GetSpecTabPage(bot);
+     if (tab >= MAX_SPECIALIZATIONS - 1)
+         return;
+@@ -1383,6 +1395,7 @@
+ 
+ void BotFactory::InitGlyphs(bool increment)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     bot->InitGlyphsForLevel();
+     uint8 const activeSpec = bot->GetActiveSpec();
+ 
+@@ -1639,6 +1652,7 @@
+ /// filters by race, class and level internally.
+ void BotFactory::InitClassSpells()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     size_t const before = bot->GetSpellMap().size();
+     uint32 const classMask = 1 << (bot->GetClass() - 1);
+ 
+@@ -1698,6 +1712,7 @@
+ 
+ void BotFactory::InitMountSpells()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     uint32 ridingSkill = 0;
+     if (bot->GetLevel() >= sPlayerbotAIConfig->useGroundMountAtMinLevel)
+     {
+@@ -2415,6 +2430,7 @@
+ // from level 20 (the 5.4.8 trainer teaches it from level 20: npc_trainer spell 80836, reqlevel 20).
+ void BotFactory::InitTradeSkills()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+         return;
+ 
+@@ -2583,6 +2599,7 @@
+ // AC :78-85).
+ void BotFactory::InitSkills()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     bot->UpdateSkillsForLevel();
+ 
+     // AC :3280-3288 riding (SetSkill(SKILL_RIDING, 0) + the four riding spells by AiPlayerbot.Use*MountAtMinLevel) is this
+@@ -2602,6 +2619,7 @@
+ 
+ void BotFactory::ClearEverything()
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     bot->GiveLevel(bot->GetClass() == CLASS_DEATH_KNIGHT ? sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL)
+                                                         : sWorld->getIntConfig(CONFIG_START_PLAYER_LEVEL));
+     bot->SetUInt32Value(PLAYER_FIELD_XP, 0);
+@@ -2716,6 +2734,7 @@
+ // AC PlayerbotFactory::InitBags (Bot/Factory/PlayerbotFactory.cpp:2799-2823), verbatim: 51809 in bag slots 19-22.
+ void BotFactory::InitBags(bool destroyOld)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     for (uint8 slot = INVENTORY_SLOT_BAG_START; slot < INVENTORY_SLOT_BAG_END; ++slot)
+     {
+         uint32 newItemId = 51809;
+@@ -2823,6 +2842,7 @@
+ // (EQUIP_ERR_2HANDED_EQUIPPED): Shield Slam, Devastate and Shield Block failed with result=31 (wave 12, Sandered).
+ void BotFactory::InitEquipment(bool incremental, bool second_chance)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return;
+     // #646, AC PlayerbotFactory.cpp:2327: each candidate keeps its best random property (item id, property id).
+     std::unordered_map<uint8, std::vector<std::pair<uint32, int32>>> items;
+     // #629: AC builds one StatsWeightCalculator per InitEquipment (PlayerbotFactory.cpp:2328) for the incremental gate below.
+--- a/native/Manager/DynamicPopulationMgr.cpp
++++ b/native/Manager/DynamicPopulationMgr.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ // GPL-2.0-or-later. Bounded hidden or nearby-appearance relocation of existing idle random bots.
+ #include "DynamicPopulationMgr.h"
+ #include "DynamicPopulationPolicy.h"
+@@ -141,6 +142,7 @@
+ }
+ bool BotEligible(Player* bot, Player* target, bool city, bool includeReservation=true)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     if (!bot || !Outdoor(bot)) return false;
+     auto* ai=GET_PLAYERBOT_AI(bot);
+     auto* session=bot->GetSession();
+@@ -186,6 +188,7 @@
+ // Return the first actual failed guard, rather than guessing why a lease was rejected.
+ char const* LocalOwnerFailure(Player* bot)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return "autonomous-player";
+     if (!bot) return "missing-bot";
+     auto* ai=GET_PLAYERBOT_AI(bot);
+     if (!ai) return "missing-ai";
+@@ -357,6 +360,7 @@
+ }
+ bool DeferRandomRelocation(Player* bot)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return true;
+     if (!bot || !Cfg().enabled || Cfg().dryRun || !bot->IsAlive()) return false;
+     auto* ai=GET_PLAYERBOT_AI(bot);
+     // Never let background random relocation take over a player-owned or busy bot.
+--- a/native/strategy/actions/AutoMaintenanceOnLevelupAction.cpp
++++ b/native/strategy/actions/AutoMaintenanceOnLevelupAction.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ #include "AutoMaintenanceOnLevelupAction.h"
+ 
+ #include "BotFactory.h"
+@@ -110,6 +111,7 @@
+ // #533 (AC AutoMaintenanceOnLevelupAction.cpp:15-23): AC's order - talents, spells, teleport, gear.
+ bool AutoMaintenanceOnLevelupAction::Execute(Event /*event*/)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     AutoPickTalents();
+ 
+     // AC AutoLearnSpell (AC :50-66) / LearnSpells (AC :68-76), which starts with
+--- a/native/strategy/actions/QuestAction.cpp
++++ b/native/strategy/actions/QuestAction.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+  * and/or modify it under version 2 of the License, or (at your option) any later version.
+@@ -263,6 +264,7 @@
+ 
+ bool QuestAction::CompleteQuest(Player* player, uint32 entry)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(player)) return false;
+     Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
+ 
+     // If player doesn't have the quest
+@@ -436,6 +438,8 @@
+ 
+ bool QuestAction::AcceptQuest(Quest const* quest, ObjectGuid questGiver)
+ {
++    if (!quest || !AutonomousPlayerAuditV19::AllowQuest(bot, quest->GetQuestId())) return false;
++    AutonomousPlayerAuditV19::QuestAttempt audit(bot, AutonomousPlayerAuditV19::AttemptKind::Accept, quest->GetQuestId());
+     std::ostringstream out;
+ 
+     uint32 questId = quest->GetQuestId();
+@@ -484,7 +488,7 @@
+         p.rpos(0);
+         bot->GetSession()->HandleQuestgiverAcceptQuestOpcode(p);
+ 
+-        if (bot->GetQuestStatus(questId) == QUEST_STATUS_NONE && sPlayerbotAIConfig->syncQuestWithPlayer)
++        if (!AutonomousPlayerAuditV19::Reserved(bot) && bot->GetQuestStatus(questId) == QUEST_STATUS_NONE && sPlayerbotAIConfig->syncQuestWithPlayer)
+         {
+             Object* pObject = ObjectAccessor::GetObjectByTypeMask(
+                 *bot, questGiver, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT | TYPEMASK_ITEM);
+--- a/native/strategy/actions/AcceptQuestAction.cpp
++++ b/native/strategy/actions/AcceptQuestAction.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+  * and/or modify it under version 2 of the License, or (at your option) any later version.
+@@ -209,6 +210,7 @@
+ 
+ bool AcceptQuestShareAction::Execute(Event event)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     Player* master = GetMaster();
+ 
+     WorldPacket& p = event.getPacket();
+@@ -275,6 +277,7 @@
+ 
+ bool ConfirmQuestAction::Execute(Event event)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
+ 
+     WorldPacket& p = event.getPacket();
+--- a/native/strategy/RPG/NewRpgBaseAction.cpp
++++ b/native/strategy/RPG/NewRpgBaseAction.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+  * and/or modify it under version 2 of the License, or (at your option), any later version.
+@@ -275,7 +276,8 @@
+         info.stuckTs = getMSTime();
+         info.stuckAttempts = 0;
+     }
+-    else if (++info.stuckAttempts >= 5 && GetMSTimeDiffToNow(info.stuckTs) >= stuckTime)
++    else if (++info.stuckAttempts >= 5 && GetMSTimeDiffToNow(info.stuckTs) >= stuckTime &&
++             !AutonomousPlayerAuditV19::Reserved(bot))
+     {
+         // No meaningful progress toward dest for `stuckTime`: fall
+         // back to teleporting directly so the bot can get on with
+@@ -389,6 +391,8 @@
+         path.CalculatePath(dx, dy, dz);
+         PathType type = path.GetPathType();
+         bool canReach = !(type & (~typeOk));
++        // Evidence from each real native alternative calculation, before any recovery request.
++        AutonomousPlayerAuditV19::AlternativePath(bot, dest, canReach, uint32(type));
+ 
+         if (canReach && fabs(delta) <= minDelta)
+         {
+@@ -412,6 +416,7 @@
+     // #814: no ground path from where the flyer hovers - fly instead of waiting for the stuck teleport.
+     if (bot->IsFlying())
+         return flyLeg("nopath");
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return AutonomousPlayerAuditV19::TryHearthstone(botAI, dest);
+     return false;
+ }
+ 
+@@ -598,7 +603,9 @@
+         if (status == QUEST_STATUS_NONE && bot->CanTakeQuest(quest, false) && bot->CanAddQuest(quest, false) &&
+             IsQuestWorthDoing(quest) && IsQuestCapableDoing(quest))
+         {
+-            accepted |= AcceptQuest(quest, guid);
++            bool const acceptedNow = AcceptQuest(quest, guid);
++            accepted |= acceptedNow;
++            if (AutonomousPlayerAuditV19::Reserved(bot) && !acceptedNow) continue;
+             BroadcastHelper::BroadcastQuestAccepted(botAI, bot, quest);  // #322, AC NewRpgBaseAction.cpp:369
+             botAI->GetRpgStatistic().questAccepted++;
+             TC_LOG_DEBUG("playerbots", "[New RPG] %s accept quest %u", bot->GetName().c_str(), quest->GetQuestId());
+@@ -606,7 +613,8 @@
+ 
+         if (status == QUEST_STATUS_COMPLETE && CanRewardQuestAC(bot, quest))
+         {
+-            TurnInQuest(quest, guid);
++            bool const rewardedNow = TurnInQuest(quest, guid);
++            if (AutonomousPlayerAuditV19::Reserved(bot) && !rewardedNow) continue;
+             BroadcastHelper::BroadcastQuestTurnedIn(botAI, bot, quest);  // #322, AC NewRpgBaseAction.cpp:381
+             botAI->GetRpgStatistic().questRewarded++;
+             TC_LOG_DEBUG("playerbots", "[New RPG] %s turned in quest %u", bot->GetName().c_str(), quest->GetQuestId());
+@@ -740,6 +748,8 @@
+ 
+ bool NewRpgBaseAction::AcceptQuest(Quest const* quest, ObjectGuid guid)
+ {
++    if (!quest || !AutonomousPlayerAuditV19::AllowQuest(bot, quest->GetQuestId())) return false;
++    AutonomousPlayerAuditV19::QuestAttempt audit(bot, AutonomousPlayerAuditV19::AttemptKind::Accept, quest->GetQuestId());
+     if (!quest)
+         return false;
+ 
+@@ -748,11 +758,13 @@
+         return false;
+ 
+     bot->AddQuestAndCheckCompletion(quest, questGiver);
+-    return true;
++    return !AutonomousPlayerAuditV19::Reserved(bot) || bot->GetQuestStatus(quest->GetQuestId()) == QUEST_STATUS_INCOMPLETE || bot->GetQuestStatus(quest->GetQuestId()) == QUEST_STATUS_COMPLETE;
+ }
+ 
+ bool NewRpgBaseAction::TurnInQuest(Quest const* quest, ObjectGuid guid)
+ {
++    if (!quest || !AutonomousPlayerAuditV19::AllowQuest(bot, quest->GetQuestId())) return false;
++    AutonomousPlayerAuditV19::QuestAttempt audit(bot, AutonomousPlayerAuditV19::AttemptKind::Reward, quest->GetQuestId());
+     if (!quest)
+         return false;
+ 
+@@ -781,7 +793,7 @@
+ 
+     bot->PlayDistanceSound(621);
+     bot->RewardQuest(quest, rewardItemId, questGiver);
+-    return true;
++    return !AutonomousPlayerAuditV19::Reserved(bot) || bot->GetQuestRewardStatus(questId);
+ }
+ 
+ uint32 NewRpgBaseAction::BestRewardIndex(Quest const* quest)
+--- a/native/strategy/RPG/NewRpgRoamTransport.cpp
++++ b/native/strategy/RPG/NewRpgRoamTransport.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * #218 / #528 (BEYOND AC, MoP only): roaming bots take boats, zeppelins, elevators, trams and flight paths on
+  * their own. Design and AC references: NewRpgRoamTransport.h.
+@@ -1427,6 +1428,7 @@
+     // portal-walk-stall ... point=57/60", status IDLE). A second stall at the same point still abandons.
+     auto stall = [&](char const* why, WorldPosition const& target) -> int32
+     {
++        if (AutonomousPlayerAuditV19::Reserved(bot)) return abandon("autonomous_no_stuck_teleport");
+         if (trip.stuckTpIdx == trip.idx || target.GetMapId() != bot->GetMapId() || bot->IsInFlight() ||
+             bot->GetTransport() || bot->GetVehicle() || bot->IsBeingTeleported())
+             return abandon(why);
+@@ -1620,6 +1622,7 @@
+         // -- portal / hearthstone: step onto it, then teleport to its exit
+         if (from.type == NODE_PORTAL || from.type == NODE_TELEPORT)
+         {
++            if (AutonomousPlayerAuditV19::Reserved(bot)) return abandon("autonomous_requires_native_portal_or_item");
+             if (from.point.GetMapId() == bot->GetMapId() && !PortalPointReached(bot, from.point) && from.type == NODE_PORTAL)
+             {
+                 if (getMSTimeDiff(trip.progressMs, now) > kWalkStallMs)
+--- a/native/strategy/Dead/ReviveFromCorpseAction.cpp
++++ b/native/strategy/Dead/ReviveFromCorpseAction.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+ * This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
+ *
+@@ -186,7 +187,7 @@
+     // Actual mobing part.
+     bool moved = false;
+ 
+-    if (!botAI->AllowActivity(ALL_ACTIVITY))
++    if (!AutonomousPlayerAuditV19::Reserved(bot) && !botAI->AllowActivity(ALL_ACTIVITY))
+     {
+         uint32 delay = sServerFacade->GetDistance2d(bot, corpse) /
+             bot->GetSpeed(MOVE_RUN);        // Time a bot would take to travel to it's corpse.
+@@ -347,6 +348,7 @@
+ 
+ bool SpiritHealerAction::Execute(Event event)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     Corpse* corpse = bot->GetCorpse();
+     if (!corpse)
+     {
+--- a/native/strategy/Dead/ReleaseSpiritAction.cpp
++++ b/native/strategy/Dead/ReleaseSpiritAction.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+  * and/or modify it under version 2 of the License, or (at your option), any later version.
+@@ -215,6 +216,7 @@
+ 
+     if (bot->GetDistance(spiritHealer) >= INTERACTION_DISTANCE)
+     {
++        if (AutonomousPlayerAuditV19::Reserved(bot)) return false; // Await ordinary movement; no healer-range relocation.
+         // Bot needs to actually click spirit-healer in BG to get res timer going
+         // and in IOC it's not within clicking range when they res in own base
+ 
+@@ -325,6 +327,7 @@
+ 
+ bool RepopAction::Execute(Event event)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     TC_LOG_DEBUG("playerbots", "Bot %s %s:%u <%s> repops at graveyard", bot->GetGUID().ToString().c_str(),
+               bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str());
+ 
+--- a/native/strategy/bg/BattleGroundJoinAction.cpp
++++ b/native/strategy/bg/BattleGroundJoinAction.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+  * and/or modify it under version 2 of the License, or (at your option), any later version.
+@@ -931,6 +932,8 @@
+             continue;
+         }
+ 
++        if (AutonomousPlayerAuditV19::Reserved(bot) && (!bot->IsAlive() || bot->IsInCombat() || !bot->getAttackers().empty() || bot->IsInFlight())) continue;
++
+         // AC BattleGroundJoinAction.cpp:1027-1028 (#210 S10 G8): dismount before the port, the way
+         // the client does - CMSG_CANCEL_MOUNT_AURA clears the mount aura; Unit::Dismount() alone
+         // leaves it and the bot can never remount (same primitive as
+@@ -961,7 +964,7 @@
+         // combat by the time they click "enter battle"; a bot can be mid-fight with a guardian
+         // out, and that guardian is then destroyed by the map change while it still holds combat
+         // references - which trips the ASSERT in CombatManager::~CombatManager.
+-        bot->CombatStopWithPets(true);
++        if (!AutonomousPlayerAuditV19::Reserved(bot)) bot->CombatStopWithPets(true);
+ 
+         WorldPacket data;
+         sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, bot, queueSlot, STATUS_IN_PROGRESS,
+--- a/native/strategy/bg/BattleGroundTactics.cpp
++++ b/native/strategy/bg/BattleGroundTactics.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+@@ -2269,7 +2270,7 @@
+ 
+             if (!haveAnchor)
+             {
+-                if (distToStart > startRadius)
++                if (!AutonomousPlayerAuditV19::Reserved(bot) && (distToStart > startRadius))
+                 {
+                     // Placed outside the pen (late join, a bad teleport, or an earlier run-out):
+                     // put it inside rather than let it walk in through a closed door.
+@@ -2290,7 +2291,7 @@
+                 float const distToAnchor = bot->GetExactDist(itr->second.GetPositionX(),
+                                                              itr->second.GetPositionY(),
+                                                              itr->second.GetPositionZ());
+-                if (distToAnchor > startRadius || distToStart > startRadius)
++                if (!AutonomousPlayerAuditV19::Reserved(bot) && (distToAnchor > startRadius || distToStart > startRadius))
+                 {
+                     TC_LOG_DEBUG("playerbots",
+                                  "[BG] %s left the starting area during WAIT_JOIN (%.0f yd from anchor, %.0f yd from start, radius %.0f) - pulling it back",
+@@ -5851,7 +5852,7 @@
+             if (!MoveTo(bg->GetMapId(), 1291.58f + frand(-5, +5), 790.87f + frand(-5, +5), 7.8f, false, true))
+             {
+                 // they like to hang around at the tip of the pipes doing nothing, so we just teleport them down
+-                if (bot->GetDistance(1333.07f, 817.18f, 13.35f) < 4)
++                if (!AutonomousPlayerAuditV19::Reserved(bot) && (bot->GetDistance(1333.07f, 817.18f, 13.35f) < 4))
+                 {
+                     // AC passes the two flags or'd into one call. 5.4.8's
+                     // RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags) builds flag64{flag, 0} and
+@@ -5861,7 +5862,7 @@
+                     bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CHANGE_MAP);
+                     bot->TeleportTo(bg->GetMapId(), 1330.96f, 816.75f, 3.2f, bot->GetOrientation());
+                 }
+-                if (bot->GetDistance(1250.13f, 764.79f, 13.34f) < 4)
++                if (!AutonomousPlayerAuditV19::Reserved(bot) && (bot->GetDistance(1250.13f, 764.79f, 13.34f) < 4))
+                 {
+                     bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED);
+                     bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CHANGE_MAP);
+--- a/native/strategy/bg/BgTacticsTB.cpp
++++ b/native/strategy/bg/BgTacticsTB.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * #901 Tol Barad bot tactics (beyond AC). Spec: Wowpedia Tol Barad (PvP) - the attackers win by holding all three bases
+  * (Ironclad Garrison, Warden's Vigil, Slagworks) and may also bring the spires down with Abandoned Siege Engines
+@@ -395,7 +396,7 @@
+         // #903: on a graveyard navmesh island no path leaves (INCOMPLETE), so neither MoveTo, the waypoints nor the core
+         // MovePoint (it rides the same partial path to the island edge) gets the bot off. After 12 s without progress, put it
+         // on the nearest measured point of the connected mesh - the same relocation the resurrection itself is.
+-        if (stuck >= 2 && !bot->GetVehicle() && OnIsland(bot))
++        if (!AutonomousPlayerAuditV19::Reserved(bot) && stuck >= 2 && !bot->GetVehicle() && OnIsland(bot))
+         {
+             Position const& to = NearestWalkable(bot);
+             TC_LOG_DEBUG("playerbots", "[TB] %s walk: graveyard island at (%.0f, %.0f, %.1f), stalled x%u -> (%.0f, %.0f, %.1f)",
+--- a/native/strategy/dungeons/CataLct/CataLctActions.cpp
++++ b/native/strategy/dungeons/CataLct/CataLctActions.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+@@ -58,6 +59,7 @@
+ 
+ bool LctReturnToPlatformAction::Execute(Event /*event*/)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     if (!CataLct::FellOffPlatform(botAI, bot))
+         return false;
+ 
+--- a/native/strategy/actions/GuildCreateActions.cpp
++++ b/native/strategy/actions/GuildCreateActions.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+  * and/or modify it under version 2 of the License, or (at your option) any later version.
+@@ -328,7 +329,7 @@
+             // (EMBLEM_PRICE = 10 * GOLD in core)
+             static constexpr uint32 REQUIRED = 10 * 10000;  // AC: 10 * GOLD (copper)
+             uint32 have = bot->GetMoney();                  // actual money earned by bot in copper
+-            if (have < REQUIRED)
++            if (!AutonomousPlayerAuditV19::Reserved(bot) && have < REQUIRED)
+             {
+                 bot->ModifyMoney(int32(REQUIRED - have));  // add only the missing amount to bot to reach 10g
+             }
+--- a/native/strategy/RPG/RpgSubActions.cpp
++++ b/native/strategy/RPG/RpgSubActions.cpp
+@@ -1,3 +1,5 @@
++#include "AutonomousNeedsBridge.h"
++#include "AutonomousPlayerAudit.h"
+ /*
+  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+  * and/or modify it under version 2 of the License, or (at your option), any later version.
+@@ -206,7 +208,11 @@
+ 
+ bool RpgSubAction::Execute(Event event)
+ {
++    if (AutonomousNeedsV19::Configured(botAI))
++        rpg->BeforeExecute(); // Set the real selected NPC before the native trainer/vendor action.
++
+     bool doAction = botAI->DoSpecificAction(ActionName(), ActionEvent(event), true);
++    AutonomousNeedsV19::NoteServiceAttempt(botAI, getName());
+     rpg->AfterExecute(doAction, true);
+     return doAction;
+ }
+@@ -262,6 +268,7 @@
+ 
+ bool RpgTaxiAction::Execute(Event /*event*/)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     GuidPosition guidP = rpg->guidP();
+ 
+     WorldPacket emptyPacket;
+@@ -326,6 +333,8 @@
+ 
+ bool RpgDiscoverAction::Execute(Event /*event*/)
+ {
++    AutonomousNeedsV19::NoteServiceAttempt(botAI, getName());
++
+     GuidPosition guidP = rpg->guidP();
+ 
+     uint32 node =
+@@ -524,6 +533,8 @@
+ 
+ bool RpgTradeUsefulAction::Execute(Event /*event*/)
+ {
++    AutonomousNeedsV19::NoteServiceAttempt(botAI, getName());
++
+     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
+ 
+     Player* player = guidP.GetPlayer();
+--- a/native/strategy/RPG/NewRpgDuelSpot.cpp
++++ b/native/strategy/RPG/NewRpgDuelSpot.cpp
+@@ -1,3 +1,4 @@
++#include "AutonomousPlayerAudit.h"
+ /*
+  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
+  * and/or modify it under version 2 of the License, or (at your option), any later version.
+@@ -146,6 +147,7 @@
+ // Same sequence as the AC tree's TeleportToSpot (SendMovementFlagUpdate is AC-only).
+ bool TeleportToSpot(Player* bot, DuelSpotInfo const& spot)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     if (!bot->IsInWorld() || bot->IsBeingTeleported())
+         return false;
+ 
+@@ -775,7 +777,7 @@
+     // 2. Budget: online random bots * SeedMaxShare / 100, minus the seeded entries already in the registry.
+     std::vector<Player*> randomBots;
+     for (Player* p : sRandomPlayerbotMgr->GetPlayerBotsSnapshot())
+-        if (p && p->IsInWorld() && sRandomPlayerbotMgr->IsRandomBot(p))
++        if (p && !AutonomousPlayerAuditV19::Reserved(p) && p->IsInWorld() && sRandomPlayerbotMgr->IsRandomBot(p))
+             randomBots.push_back(p);
+ 
+     uint32 seededNow = 0;
+@@ -949,6 +951,7 @@
+ 
+ bool NewRpgDuelSpotAction::Execute(Event /*event*/)
+ {
++    if (AutonomousPlayerAuditV19::Reserved(bot)) return false;
+     NewRpgInfo& info = botAI->GetRpgInfo();
+     auto* dataPtr = std::get_if<NewRpgInfo::DuelSpot>(&info.data);
+     if (!dataPtr)
+--- a/native/Factory/AiFactory.cpp
++++ b/native/Factory/AiFactory.cpp
+@@ -3,6 +3,7 @@
+  * and/or modify it under version 2 of the License, or (at your option), any later version.
+  */
+ 
++#include "AutonomousNeedsBridge.h"
+ #include "AiFactory.h"
+ 
+ #include <mutex>
+@@ -820,6 +821,11 @@
+     else
+         nonCombatEngine->ChangeStrategy(sPlayerbotAIConfig->nonCombatStrategies);
+ 
++    // V19: only the configured actor receives the service bridge.
++    // Broad goals remain the existing NewRpg weighted status chooser.
++    if (AutonomousNeedsV19::Configured(facade) && !player->InBattleground() && !TolBaradBots::InWar(player))
++        nonCombatEngine->addStrategiesNoInit("new rpg", "rpg", "travel", nullptr);
++
+     // Objective play, for a bot that is actually inside a match (unchanged).
+     if (player->InBattleground() && player->GetBattleground())
+         AddBattlegroundStrategies(player, nonCombatEngine, true);
+--- a/native/strategy/RPG/RpgStrategy.cpp
++++ b/native/strategy/RPG/RpgStrategy.cpp
+@@ -12,12 +12,16 @@
+  * "rpg trade useful", "rpg mount anim" nodes).
+  */
+ 
++#include "AutonomousNeedsBridge.h"
+ #include "RpgStrategy.h"
+ #include "Playerbots.h"
+ #include "RpgSubActions.h"
+ 
+ float RpgActionMultiplier::GetValue(Action* action)
+ {
++    if (AutonomousNeedsV19::Configured(botAI))
++        return AutonomousNeedsV19::RpgMultiplier(botAI, action);
++
+     if (action == nullptr)
+         return 1.0f;
+ 
+@@ -34,11 +38,14 @@
+ 
+ NextAction** RpgStrategy::getDefaultActions()
+ {
+-    return NextAction::array(0, new NextAction("rpg", 1.0f), nullptr);
++    return NextAction::array(0, new NextAction("rpg", AutonomousNeedsV19::Configured(botAI) ? 4.3f : 1.0f), nullptr);
+ }
+ 
+ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+ {
++    if (AutonomousNeedsV19::InitServiceTriggers(botAI, triggers))
++        return;
++
+     triggers.push_back(
+         new TriggerNode(
+             "no rpg target",
+--- a/native/strategy/actions/ChooseRpgTargetAction.cpp
++++ b/native/strategy/actions/ChooseRpgTargetAction.cpp
+@@ -21,6 +21,7 @@
+  *    returns before restoring "rpg target" when "rpg" strategy is missing (AC line `if (!rpgStrategy) return 0.0f;`).
+  */
+ 
++#include "AutonomousNeedsBridge.h"
+ #include "ChooseRpgTargetAction.h"
+ #include "BudgetValues.h"
+ #include "ChatHelper.h"
+@@ -90,7 +91,7 @@
+         {
+             triggerNode->setTrigger(trigger);
+ 
+-            if (triggerNode->getFirstRelevance() < maxRelevance || triggerNode->getFirstRelevance() > 2.0f)
++            if (triggerNode->getFirstRelevance() < maxRelevance || triggerNode->getFirstRelevance() > (AutonomousNeedsV19::Configured(botAI) ? 5.0f : 2.0f))
+                 continue;
+ 
+             // AC redeclares `Trigger* trigger = triggerNode->getTrigger();` here (same pointer as the outer one, set
+@@ -109,7 +110,9 @@
+                 NextAction* nextAction = nextActions[i];
+                 Action* action = botAI->GetAiObjectContext()->GetAction(nextAction->getName());
+ 
+-                if (dynamic_cast<RpgEnabled*>(action))
++                if (dynamic_cast<RpgEnabled*>(action) &&
++                    (!AutonomousNeedsV19::Configured(botAI) ||
++                     AutonomousNeedsV19::ServiceActionPossible(botAI, action)))
+                     isRpg = true;
+             }
+ 
+@@ -275,6 +278,9 @@
+     std::mt19937 gen(time(0));
+     sTravelMgr.weighted_shuffle(guidps.begin(), guidps.end(), relevances.begin(), relevances.end(), gen);
+ 
++    if (AutonomousNeedsV19::Configured(botAI) && guidps.empty())
++        return false;
++
+     GuidPosition guidP(guidps.front());
+     if (!guidP)
+     {
+--- a/native/strategy/RPG/RpgAction.cpp
++++ b/native/strategy/RPG/RpgAction.cpp
+@@ -18,6 +18,7 @@
+  *    spelling still compiles.
+  */
+ 
++#include "AutonomousNeedsBridge.h"
+ #include "RpgAction.h"
+ #include "ChatHelper.h"
+ #include "EmoteAction.h"
+@@ -120,7 +121,9 @@
+                     isChecked = true;
+ 
+                     Action* action = botAI->GetAiObjectContext()->GetAction(nextAction->getName());
+-                    if (!dynamic_cast<RpgEnabled*>(action) || !action->isUseful() || !action->isPossible())
++                    if (!dynamic_cast<RpgEnabled*>(action) || !action->isUseful() || !action->isPossible() ||
++                        (AutonomousNeedsV19::Configured(botAI) &&
++                         !AutonomousNeedsV19::ServiceActionPossible(botAI, action)))
+                         continue;
+ 
+                     actions.push_back(action);
+--- a/native/strategy/triggers/RpgTriggers.cpp
++++ b/native/strategy/triggers/RpgTriggers.cpp
+@@ -9,6 +9,7 @@
+  * them are registered on this fork is listed in the #272 report.
+  */
+ 
++#include "AutonomousNeedsBridge.h"
+ #include "RpgTriggers.h"
+ 
+ #include "BudgetValues.h"
+@@ -130,6 +131,10 @@
+ 
+ bool RpgBuyTrigger::IsActive()
+ {
++    // Native item usage and purpose budget replace the unrelated durability/sell test for this actor.
++    if (AutonomousNeedsV19::Configured(botAI))
++        return AutonomousNeedsV19::WantsVendorPurchase(botAI);
++
+     GuidPosition guidP(getGuidP());
+ 
+     if (!guidP.HasNpcFlag(UNIT_NPC_FLAG_VENDOR))
+@@ -305,6 +310,9 @@
+ 
+ bool RpgCraftTrigger::IsActive()
+ {
++    if (AutonomousNeedsV19::Configured(botAI) && !AutonomousNeedsV19::WantsCraft(botAI))
++        return false;
++
+     GuidPosition guidP(getGuidP());
+ 
+     if (guidP.IsPlayer())
+--- a/native/strategy/actions/CastCustomSpellAction.cpp
++++ b/native/strategy/actions/CastCustomSpellAction.cpp
+@@ -8,6 +8,7 @@
+  * -> sServerFacade; sPlayerbotAIConfig. -> ->. DisEnchantRandomItemAction / EnchantRandomItemAction are ported at the bottom (botAI->HasSkill/HasGameClientMaster/IsInRealGuild, #611 item 4).
+  */
+ 
++#include "AutonomousNeedsBridge.h"
+ #include "CastCustomSpellAction.h"
+ #include "ChatHelper.h"
+ #include "ChatLinkParse.h"
+@@ -295,9 +296,11 @@
+ 
+     // bool isCast = false; //not used, line marked for removal.
+ 
++    bool const needsCraft = AutonomousNeedsV19::Configured(botAI) && getName() == "craft random item";
+     std::sort(spellList.begin(), spellList.end(),
+-              [](std::pair<uint32, std::pair<uint32, WorldObject*>> i,
+-                 std::pair<uint32, std::pair<uint32, WorldObject*>> j) { return i.first > j.first; });
++              [needsCraft](std::pair<uint32, std::pair<uint32, WorldObject*>> i,
++                 std::pair<uint32, std::pair<uint32, WorldObject*>> j)
++              { return needsCraft ? i.second.first > j.second.first : i.first > j.first; });
+ 
+     uint32 rndBound = spellList.size() / 4;
+ 
+@@ -317,7 +320,8 @@
+ 
+         if (isCast)
+         {
+-            if (MultiCast && ((wo && BotHasInArcAC(bot, CAST_ANGLE_IN_FRONT, wo, sPlayerbotAIConfig->sightDistance))))
++            // Re-evaluate need and owned reagents after each actor craft; no queued 19-repeat batch.
++            if (MultiCast && !needsCraft && ((wo && BotHasInArcAC(bot, CAST_ANGLE_IN_FRONT, wo, sPlayerbotAIConfig->sightDistance))))
+             {
+                 std::ostringstream cmd;
+                 cmd << "castnc " << RpgFormatWorldobject(wo) + " " << spellId << " " << 19;
+@@ -332,13 +336,20 @@
+ 
+ bool CraftRandomItemAction::AcceptSpell(SpellInfo const* spellInfo)
+ {
+-    return spellInfo->Effects[EFFECT_0].Effect == SPELL_EFFECT_CREATE_ITEM && spellInfo->ReagentCount[EFFECT_0] > 0 &&
+-           spellInfo->SchoolMask == 0;
++    bool const createsWithReagents = spellInfo->Effects[EFFECT_0].Effect == SPELL_EFFECT_CREATE_ITEM &&
++        spellInfo->ReagentCount[EFFECT_0] > 0;
++    if (AutonomousNeedsV19::Configured(botAI))
++        return createsWithReagents && GetSpellPriority(spellInfo) > 1 &&
++            AutonomousNeedsV19::HasCraftReagents(botAI, spellInfo);
++    return createsWithReagents && spellInfo->SchoolMask == 0;
+ }
+ 
+ uint32 CraftRandomItemAction::GetSpellPriority(SpellInfo const* spellInfo)
+ {
+-    if (spellInfo->Effects[EFFECT_0].Effect != SPELL_EFFECT_CREATE_ITEM)
++    // V19 fixes the inverted branch only for its own learned-recipe path.
++    if (AutonomousNeedsV19::Configured(botAI) ?
++        spellInfo->Effects[EFFECT_0].Effect == SPELL_EFFECT_CREATE_ITEM :
++        spellInfo->Effects[EFFECT_0].Effect != SPELL_EFFECT_CREATE_ITEM)
+     {
+         uint32 newItemId = spellInfo->Effects[EFFECT_0].ItemType;
+         if (newItemId)
+--- a/native/strategy/actions/ChooseTravelTargetAction.cpp
++++ b/native/strategy/actions/ChooseTravelTargetAction.cpp
+@@ -6,6 +6,7 @@
+  * into the Legends of Azeroth Pandaria fork, issue #269.
+  */
+ 
++#include "AutonomousNeedsBridge.h"
+ #include "ChooseTravelTargetAction.h"
+ #include "ChatHelper.h"
+ #include "LootMgr.h"
+@@ -14,6 +15,10 @@
+ 
+ bool ChooseTravelTargetAction::Execute(Event /*event*/)
+ {
++    if (AutonomousNeedsV19::Configured(botAI))
++        return AutonomousNeedsV19::SelectServiceTravel(botAI,
++            context->GetValue<TravelTarget*>("travel target")->Get());
++
+     // Player* requester = event.getOwner() ? event.getOwner() : GetMaster(); //not used, line marked for removal.
+ 
+     //Get the current travel target. This target is no longer active.
+--- a/native/strategy/generic/TravelStrategy.cpp
++++ b/native/strategy/generic/TravelStrategy.cpp
+@@ -6,6 +6,7 @@
+  * into the Legends of Azeroth Pandaria fork, issue #269.
+  */
+ 
++#include "AutonomousNeedsBridge.h"
+ #include "TravelStrategy.h"
+ #include "Playerbots.h"
+ 
+@@ -24,5 +25,5 @@
+     triggers.push_back(
+         new TriggerNode("no travel target", NextAction::array(0, new NextAction("choose travel target", 6.f), nullptr)));
+     triggers.push_back(
+-        new TriggerNode("far from travel target", NextAction::array(0, new NextAction("move to travel target", 1), nullptr)));
++        new TriggerNode("far from travel target", NextAction::array(0, new NextAction("move to travel target", AutonomousNeedsV19::Configured(botAI) ? 6.0f : 1.0f), nullptr)));
+ }
+--- a/native/Travel/TravelMgr.cpp
++++ b/native/Travel/TravelMgr.cpp
+@@ -8,6 +8,7 @@
+  * node graph needs. See TravelMgr.h for what is deliberately not ported.
+  */
+ 
++#include "AutonomousNeedsBridge.h"
+ #include "TravelMgr.h"
+ 
+ #include "ChatHelper.h"
+@@ -1569,6 +1570,9 @@
+ 
+ bool RpgTravelDestination::isActive(Player* bot)
+ {
++    if (AutonomousNeedsV19::Configured(GET_PLAYERBOT_AI(bot)))
++        return AutonomousNeedsV19::ServiceDestinationActive(GET_PLAYERBOT_AI(bot), this);
++
+     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+     AiObjectContext* context = botAI->GetAiObjectContext();
+ 

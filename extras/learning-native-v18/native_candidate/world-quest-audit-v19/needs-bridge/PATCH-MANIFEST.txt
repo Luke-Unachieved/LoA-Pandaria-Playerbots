@@ -1,0 +1,25 @@
+V19 NEEDS BRIDGE CHECKPOINT - SOURCE ONLY
+
+New native helpers (compile .cpp, include this directory):
+AutonomousNeedsBridge.cpp sha256=92b0b65881688245e6b631b055123f12e72c03e1f27655c4663e5c827d9883ad
+AutonomousServiceTravel.cpp sha256=998fe1f90231a4bb67aef0c15f11a502c981dc4f43d0c6de1fd00a70713a643a
+AutonomousNeedsBridge.h sha256=50eaa7bc80da78d70ac38f45e89585b8e10dbd690742a0ea309c2f14bdd60ac8
+
+Owner lifecycle seams:
+AutonomousNeedsV19::InitializeTravel() after native world/travel initialization.
+AutonomousNeedsV19::UpdateTravelCatalog() on world owner thread after map workers.
+
+Native transformations (compose with owner exclusions via build_need_bridge.py):
+src/Factory/AiFactory.cpp baseline_sha256=13256cdfb65a99bdb85e13a5fbef2bc9ad007e1d20435498b738de8bc920205a
+src/strategy/RPG/RpgStrategy.cpp baseline_sha256=2988aee450ebe744f65f46bca284748f1b0979021f450d43dc5e925cc29fab3b
+src/strategy/actions/ChooseRpgTargetAction.cpp baseline_sha256=a222636c50e1643f7289ac3083d44f826475e21fcede343308557e7c47e33215
+src/strategy/RPG/RpgAction.cpp baseline_sha256=a4e11e973b247ee5ece5db85c036b929c8c5c8771a568fb2b780d42721a7d126
+src/strategy/RPG/RpgSubActions.cpp baseline_sha256=8c1f6590e1443e720ac74a00a626cc545b0b4b8c2e4de88d8c8e2f052fb606f8
+src/strategy/triggers/RpgTriggers.cpp baseline_sha256=c4b62c585dd73051b23eef4bc43cc37065bcbe98d1badde7406a561f67936323
+src/strategy/actions/CastCustomSpellAction.cpp baseline_sha256=668d7199ba51284647167e53dcf9a176be111fe7f3f481230098a716e1fc172b
+src/strategy/actions/ChooseTravelTargetAction.cpp baseline_sha256=46cd2791ca87f0a870f3af7adfd0042384cef942b48babc6499465fd672aab23
+src/strategy/generic/TravelStrategy.cpp baseline_sha256=80140bf63b6f401cf21c7573b5b7690d4c94991bf5b313dac9b519845fdd6855
+src/Travel/TravelMgr.cpp baseline_sha256=b137b93d3e8db45a3ba37e1e6ef8ec86bd7b9ce13e3355dcd16c968c98719b24
+
+No global quest/travel cache clear/rebuild, no native execution, no server/DB/Windows change.
+Current-map service routing only; profession-only training/AH/mail/bank/cross-map planning remain gaps.

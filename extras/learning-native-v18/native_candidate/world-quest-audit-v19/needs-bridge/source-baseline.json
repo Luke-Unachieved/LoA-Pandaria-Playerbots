@@ -1,0 +1,52 @@
+[
+  {
+    "path": "src/Factory/AiFactory.cpp",
+    "source_sha256": "13256cdfb65a99bdb85e13a5fbef2bc9ad007e1d20435498b738de8bc920205a",
+    "transformed_sha256": "68144debe960ff86e6f02293abf7424b04b7731c60e2ad1d6a1dbeb07793fb11"
+  },
+  {
+    "path": "src/strategy/RPG/RpgStrategy.cpp",
+    "source_sha256": "2988aee450ebe744f65f46bca284748f1b0979021f450d43dc5e925cc29fab3b",
+    "transformed_sha256": "e12c5397a21cd0159f7d3e4558819ad6c89285408e0758669cba50e0a26a88d2"
+  },
+  {
+    "path": "src/strategy/actions/ChooseRpgTargetAction.cpp",
+    "source_sha256": "a222636c50e1643f7289ac3083d44f826475e21fcede343308557e7c47e33215",
+    "transformed_sha256": "ba058dfa970b7c1aed7a22c558e23cd9f596de8c4b2c5245b4a80a2ff1753ff5"
+  },
+  {
+    "path": "src/strategy/RPG/RpgAction.cpp",
+    "source_sha256": "a4e11e973b247ee5ece5db85c036b929c8c5c8771a568fb2b780d42721a7d126",
+    "transformed_sha256": "f38c94c4aa4a981db0f695aa557ce58bf634a36f9c055a14fb1bad2f97c16ee2"
+  },
+  {
+    "path": "src/strategy/RPG/RpgSubActions.cpp",
+    "source_sha256": "8c1f6590e1443e720ac74a00a626cc545b0b4b8c2e4de88d8c8e2f052fb606f8",
+    "transformed_sha256": "db5e2d2d044a037086ed0ae3e83873ec39413cbb96825892bb42fc044e20d524"
+  },
+  {
+    "path": "src/strategy/triggers/RpgTriggers.cpp",
+    "source_sha256": "c4b62c585dd73051b23eef4bc43cc37065bcbe98d1badde7406a561f67936323",
+    "transformed_sha256": "e66d8fc6e05088b642323815a27de03158806fc4c30547573d581427bb67067e"
+  },
+  {
+    "path": "src/strategy/actions/CastCustomSpellAction.cpp",
+    "source_sha256": "668d7199ba51284647167e53dcf9a176be111fe7f3f481230098a716e1fc172b",
+    "transformed_sha256": "1b5f5e1854b59ee5eca126add6642c18f7bede279d5919f2de11a7f8c74ddf17"
+  },
+  {
+    "path": "src/strategy/actions/ChooseTravelTargetAction.cpp",
+    "source_sha256": "46cd2791ca87f0a870f3af7adfd0042384cef942b48babc6499465fd672aab23",
+    "transformed_sha256": "944ff5e5ef4f25711b9c3e6e5fd4624201530059482f32c6784c9ce1420ee2ab"
+  },
+  {
+    "path": "src/strategy/generic/TravelStrategy.cpp",
+    "source_sha256": "80140bf63b6f401cf21c7573b5b7690d4c94991bf5b313dac9b519845fdd6855",
+    "transformed_sha256": "69332c6e391e1e486a9ed5cf0af1b21d5557e2bb88749f520c6c5d3f4c784e32"
+  },
+  {
+    "path": "src/Travel/TravelMgr.cpp",
+    "source_sha256": "b137b93d3e8db45a3ba37e1e6ef8ec86bd7b9ce13e3355dcd16c968c98719b24",
+    "transformed_sha256": "97ed28027a260d63847c66c2d02a700fdf6f49b6bbe4e97222a4931e66990858"
+  }
+]

@@ -1,0 +1,259 @@
+{
+  "schema": "autonomous-v19-native-hooks-v1",
+  "native_sources": [
+    {
+      "target": "native/mod_playerbots.cpp",
+      "source": "/workspace/shared/playerbot-learning-lab/native_candidate/scheduler-v18/mod_playerbots.cpp.candidate",
+      "source_sha256": "ab64df991c4dadf193f29b8e64aa28382fbbce217d36f7759d7c5db2fbd1ae1c",
+      "normalized_source_sha256": "ab64df991c4dadf193f29b8e64aa28382fbbce217d36f7759d7c5db2fbd1ae1c",
+      "prepared_sha256": "68190559323740d8305f4484c2f8a23b28d11482de515063736babcd3e730de8"
+    },
+    {
+      "target": "native/NativeBackgroundTraining.cpp",
+      "source": "/workspace/shared/playerbot-learning-lab/native_candidate/integrated-v18/new/NativeBackgroundTraining.cpp",
+      "source_sha256": "c0bd50280300df7bb768eefdfb9e9ad971b900a6e0c1f88376ec1330a3516249",
+      "normalized_source_sha256": "c0bd50280300df7bb768eefdfb9e9ad971b900a6e0c1f88376ec1330a3516249",
+      "prepared_sha256": "c335f06423bb44c8b56e30c645a10b4c8757ede25c192ffaa5ca3ef131e3518e"
+    },
+    {
+      "target": "native/AI/PlayerbotAI.cpp",
+      "source": "/workspace/shared/playerbot-learning-lab/native_candidate/composed-v18/PlayerbotAI.cpp",
+      "source_sha256": "2c0b398061b6a61893a380458ef4fbf79d55e1d34450decfadd1ddef712abc94",
+      "normalized_source_sha256": "7221374b0dac96be1c206a1b9acb8d319b354acc8820696e1ea8bfa425ce0425",
+      "prepared_sha256": "27912b4ea7e5f096695e3a741500c547107c59e297f28fd51fab37a1d3991245"
+    },
+    {
+      "target": "native/Manager/RandomPlayerbotMgr.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/Manager/RandomPlayerbotMgr.cpp",
+      "source_sha256": "d6f0ada1e1a760eedbd7ff279a85f6b3f4b5645c262f9a4849e00c35604fb2f4",
+      "normalized_source_sha256": "7792e7304a99c8f0295c3ad68d6db7f523a2e1ed9181c8fcd613c72042382370",
+      "prepared_sha256": "cf2b73ca360ec39c5509ca7f364321e770d43d8edfcfd1706c79671fcfcf077c"
+    },
+    {
+      "target": "native/Manager/PlayerbotMgr.h",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/Manager/PlayerbotMgr.h",
+      "source_sha256": "49050bb78713278eee9b0f2513b3b2ba7cf7c37c4852b1ed3835faf35aa79a5a",
+      "normalized_source_sha256": "8ef23c06719a1123e53878dc3c48dbe2be73f42c5afc013be85d54610a740c1e",
+      "prepared_sha256": "c9ee08ff123ebc19b238b3f7861d346b2310617a0ee680b793badc032b99b5c6"
+    },
+    {
+      "target": "native/Manager/PlayerbotMgr.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/Manager/PlayerbotMgr.cpp",
+      "source_sha256": "263feddd092098d84dfdfae429cbde4bf94f1c5731f51fb510363a806c1d3460",
+      "normalized_source_sha256": "65423dc347b20924debb6fb0e471ad3dccc229ae3ef17e268da8b67bf3586900",
+      "prepared_sha256": "6315118bbc65e9ebc074bf689ce2563dc6f6fbea2e2824f1c1bf6582fc5a649f"
+    },
+    {
+      "target": "native/Factory/BotFactory.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/Factory/BotFactory.cpp",
+      "source_sha256": "06abb354ca65b097d4ef3d4461fb44ab0f4beb3e996bf7ba521ee17c706f50ce",
+      "normalized_source_sha256": "b3961fd2c83e17a33f18f1527f8007ac40f8c5e4dbdb5b7a0215838637babc82",
+      "prepared_sha256": "116f1c1d40a9117288a64939935db5aa8838c5bddb2672e0822475b5299c3d5d"
+    },
+    {
+      "target": "native/Manager/DynamicPopulationMgr.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/Manager/DynamicPopulationMgr.cpp",
+      "source_sha256": "ba0cc266f50ae89a3ba4b175a021b0e428d2524bbb4fdc8f043dd1cfdb08e0b4",
+      "normalized_source_sha256": "ba0cc266f50ae89a3ba4b175a021b0e428d2524bbb4fdc8f043dd1cfdb08e0b4",
+      "prepared_sha256": "416e93d707c82e8f056590a5429b1a40cae8e295363ac99e8eb699ecb584f935"
+    },
+    {
+      "target": "native/strategy/actions/AutoMaintenanceOnLevelupAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/actions/AutoMaintenanceOnLevelupAction.cpp",
+      "source_sha256": "7ee37dcc51f5efb42fb3ca6b107bef141d23a49af5ae429e8ae4e9081a64050d",
+      "normalized_source_sha256": "821f94510998698373ed2fbd802baa4d678b76b633e6cdee3dd6f26c5eb74a5f",
+      "prepared_sha256": "d9b3c8b755644c9eb554a30071eeff6df6b7cb6d07e8d674a60e1a2db9afc266"
+    },
+    {
+      "target": "native/strategy/actions/QuestAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/actions/QuestAction.cpp",
+      "source_sha256": "b21f5de439eaf197800fdb99586e02c59a22de8193ef0a9d1922b5c0b2b3e6f6",
+      "normalized_source_sha256": "cb0b9b4def407472822a2884f203a0f07910d60b70a08bec63044a4920d735b3",
+      "prepared_sha256": "7177b8fd16a930bed743bf288dfd0be4978ba99b526457e292655264f5a89692"
+    },
+    {
+      "target": "native/strategy/actions/AcceptQuestAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/actions/AcceptQuestAction.cpp",
+      "source_sha256": "aecee97236dc19974a4e1f1fa0a500538512f15dd5b387d375393d3f8ac90bee",
+      "normalized_source_sha256": "b6105320da1a16bfe57c1a0e78bfe9178fa0a1013403740f1a5ccf044caf52bb",
+      "prepared_sha256": "a177ce2c5754d068dfe8ce597c10ed0d06174e3d159309e18c36ba2e3bd05c2e"
+    },
+    {
+      "target": "native/strategy/RPG/NewRpgBaseAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/RPG/NewRpgBaseAction.cpp",
+      "source_sha256": "5630dccb48a83dda174569718190c21afe5517add02f860f9edfd35a476165a8",
+      "normalized_source_sha256": "0115e35e5a8e2e147c511c8284ab391cc2cf23da459a8fde6798c08f4b2d1920",
+      "prepared_sha256": "2a00f67404bda6214f8136da9112e123cc94e2929bce0dfd4cf208954ec003fa"
+    },
+    {
+      "target": "native/strategy/RPG/NewRpgRoamTransport.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/RPG/NewRpgRoamTransport.cpp",
+      "source_sha256": "362bdda6b6f15fe510877a200c1cccb92f605bc3d44a66cddb75b14f65ed3ad3",
+      "normalized_source_sha256": "deb134a7ccaa5259ed0d2fc56cac7626f376760b34d2c29d55c526dcbcf29ff3",
+      "prepared_sha256": "0f6ef8a500f030aa2d05666954cf976985d12180ab0a99b585dd9344c01a83f3"
+    },
+    {
+      "target": "native/strategy/Dead/ReviveFromCorpseAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/Dead/ReviveFromCorpseAction.cpp",
+      "source_sha256": "927cb62f8002a96157e48db3deca057fe2f4c928629b78aceb62410d495c8d5d",
+      "normalized_source_sha256": "ccc1975c77128fa01cef72161dd7b76259750131bd6b150fb620a76f18de6b09",
+      "prepared_sha256": "2ae9e0adf24761b24efa8baa81e40745eb95d50c6d828941862b3b7ddf1beaea"
+    },
+    {
+      "target": "native/strategy/Dead/ReleaseSpiritAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/Dead/ReleaseSpiritAction.cpp",
+      "source_sha256": "a3c1b22c0e4000adadb1e2bcbe8a7fd6d1261c760c30a8dca1b20e93a4a7e12f",
+      "normalized_source_sha256": "f44e9eaa3f1c5642467c72ba339cc201683b0a1c67ff90f7c2039ffa32990d3c",
+      "prepared_sha256": "995ce7d04dba5856755e92633fd31532b46e14b76ff58f41d93752a2eb782cd8"
+    },
+    {
+      "target": "native/strategy/bg/BattleGroundJoinAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/bg/BattleGroundJoinAction.cpp",
+      "source_sha256": "1802c5bec41edcab191ffbf895c4aa1c8def5c13fa0e220f3cdec3c6ac0d454d",
+      "normalized_source_sha256": "6107b0d003e6d7e7da8ce9f0ec6333d25535328d50722aec728c948dc210b84b",
+      "prepared_sha256": "dcf8f46dd1f282ac4dd16d318302aa8b992663af7f608e4620aff6a8d79c3c61"
+    },
+    {
+      "target": "native/strategy/bg/BattleGroundTactics.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/bg/BattleGroundTactics.cpp",
+      "source_sha256": "fc799b3fc98961b96e498230f3c05f4ba5167bc1867d65ec75b9df5d8743bbd4",
+      "normalized_source_sha256": "a419abb18ebef222713310bca843cf60afd035181a3db21fede1f3c9799f67b2",
+      "prepared_sha256": "801053b407ef4b3112097be9cd0fadc65284fc67de7aacfba062c8c7a00da01e"
+    },
+    {
+      "target": "native/strategy/bg/BgTacticsTB.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/bg/BgTacticsTB.cpp",
+      "source_sha256": "02851dc23d6d424f77d1535a784fa02ecc5dfe09fde541bc25ed0fa3978008be",
+      "normalized_source_sha256": "916fb78e2902ee551ac34478812e53bb806d60229d507430bca2b5a7a5dc992c",
+      "prepared_sha256": "0a62c2f6f2e917fcf680712b33784c2ef108fcd44e026a001402607de065118c"
+    },
+    {
+      "target": "native/strategy/dungeons/CataLct/CataLctActions.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/dungeons/CataLct/CataLctActions.cpp",
+      "source_sha256": "971d80406a0542408d66b1f71bb74e0fa6a56398c6b02fab913150214778da18",
+      "normalized_source_sha256": "7e06cbc693d62715628209b0f3f263c58bc698226246f1534d1868f9d3d49b2c",
+      "prepared_sha256": "d3d6607d697df82c2aff67e94af7561f1ad072630c573d30f83fc546f2e96b09"
+    },
+    {
+      "target": "native/strategy/actions/GuildCreateActions.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/actions/GuildCreateActions.cpp",
+      "source_sha256": "0f44e93740590b6eff9040be9b4e761a99423e885ae3858d266fd0383f929225",
+      "normalized_source_sha256": "25cca98407df423fff7071aff6207b1c4395cc6308c5e3fb7d3ecf64eed27b17",
+      "prepared_sha256": "c7ba7dd2fee9b3b23d3eda517f45451fba828bb52a252a2a13511bfcab3b057b"
+    },
+    {
+      "target": "native/strategy/RPG/RpgSubActions.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/RPG/RpgSubActions.cpp",
+      "source_sha256": "8c1f6590e1443e720ac74a00a626cc545b0b4b8c2e4de88d8c8e2f052fb606f8",
+      "normalized_source_sha256": "b05f543e1850a825e8d24c95c087f7dff3d612cac4c85b1614c23d0102ce9039",
+      "prepared_sha256": "eff30e42ab7e47c998b432dde8b41c329f8903b5b801544d0636f3d255c08d02"
+    },
+    {
+      "target": "native/strategy/RPG/NewRpgDuelSpot.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/RPG/NewRpgDuelSpot.cpp",
+      "source_sha256": "345a29f4f10684b7bd01c6b4d09d2879d5e92b0443af714b927ecf90f1c837bb",
+      "normalized_source_sha256": "50d7c5347035635e1e375109d5cc0a36a3c717aa8d7e2a359e69370c28a031c5",
+      "prepared_sha256": "1fecf65ed0cbcd1fd4689ee2b502024028f9a3d7aada588e61a0c022d901ce6b"
+    },
+    {
+      "target": "native/Factory/AiFactory.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/Factory/AiFactory.cpp",
+      "source_sha256": "13256cdfb65a99bdb85e13a5fbef2bc9ad007e1d20435498b738de8bc920205a",
+      "normalized_source_sha256": "c5b6a3ca8f149cd3eedc6fecfc48790d941dccbf6cfc71cc65fa74eb1bbee4ee",
+      "prepared_sha256": "b81d24da22f3176e8f5908197ecfb330a6f8a8f4abd880af8d3d760def062e68"
+    },
+    {
+      "target": "native/strategy/RPG/RpgStrategy.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/RPG/RpgStrategy.cpp",
+      "source_sha256": "2988aee450ebe744f65f46bca284748f1b0979021f450d43dc5e925cc29fab3b",
+      "normalized_source_sha256": "1e5b56037c7d8b675f50a562ba3f4df7b9d977bf658f07b46c2b0c6a5301f985",
+      "prepared_sha256": "c6b8861f81a180791ae60900c2ced000154fdb9d35248724a47b0e4331ab72f9"
+    },
+    {
+      "target": "native/strategy/actions/ChooseRpgTargetAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/actions/ChooseRpgTargetAction.cpp",
+      "source_sha256": "a222636c50e1643f7289ac3083d44f826475e21fcede343308557e7c47e33215",
+      "normalized_source_sha256": "a6493e004fc1c68f68552a68e56540e7417857ba4f4cc4c3f9a15758263323e5",
+      "prepared_sha256": "bf874ebce62c8711235597678170a84ce67fcfed6bb789ceecaa8cc065e8d988"
+    },
+    {
+      "target": "native/strategy/RPG/RpgAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/RPG/RpgAction.cpp",
+      "source_sha256": "a4e11e973b247ee5ece5db85c036b929c8c5c8771a568fb2b780d42721a7d126",
+      "normalized_source_sha256": "a75e523b938e39794833e08a4a25a482fb6deb508f2fb0ae8dd324c8a7ceda21",
+      "prepared_sha256": "415e42589032e33ccdc299a65733128771aeb97ef97cc6845400d96faee5557b"
+    },
+    {
+      "target": "native/strategy/triggers/RpgTriggers.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/triggers/RpgTriggers.cpp",
+      "source_sha256": "c4b62c585dd73051b23eef4bc43cc37065bcbe98d1badde7406a561f67936323",
+      "normalized_source_sha256": "e588536efd64988c6da607e688dadcde2eaa0c383f03a078eb48d80a2f35cbd9",
+      "prepared_sha256": "8810e5fd3b0f3ea0ac37a46ade8bdaa9423b67bce1c4a4a3e570556aafcacb7b"
+    },
+    {
+      "target": "native/strategy/actions/CastCustomSpellAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/actions/CastCustomSpellAction.cpp",
+      "source_sha256": "668d7199ba51284647167e53dcf9a176be111fe7f3f481230098a716e1fc172b",
+      "normalized_source_sha256": "cf2ba80bdcc73f6845ff8cba142fd551c015cc734fcc177ba94988c1fdd08a51",
+      "prepared_sha256": "d014b4f243875113f326f159602dbd12ae62d9790eef2a3ce87524c51810da06"
+    },
+    {
+      "target": "native/strategy/actions/ChooseTravelTargetAction.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/actions/ChooseTravelTargetAction.cpp",
+      "source_sha256": "46cd2791ca87f0a870f3af7adfd0042384cef942b48babc6499465fd672aab23",
+      "normalized_source_sha256": "592b7caaff6ec6b5a5c3301e4b0d19f8b5648948bc6609d110191fca012ea9c7",
+      "prepared_sha256": "e161743af7729f395f01566c60e3114506ae31cffa2ab2c880841240f1b58a5e"
+    },
+    {
+      "target": "native/strategy/generic/TravelStrategy.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/strategy/generic/TravelStrategy.cpp",
+      "source_sha256": "80140bf63b6f401cf21c7573b5b7690d4c94991bf5b313dac9b519845fdd6855",
+      "normalized_source_sha256": "9a80c1907d093f7b1967933ff4be0d71b4df51c1faa911168751409f45a864db",
+      "prepared_sha256": "114ed69915c29e30f3438bd819b27c3a6389400287cc305e2c776f4702c74a93"
+    },
+    {
+      "target": "native/Travel/TravelMgr.cpp",
+      "source": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/Travel/TravelMgr.cpp",
+      "source_sha256": "b137b93d3e8db45a3ba37e1e6ef8ec86bd7b9ce13e3355dcd16c968c98719b24",
+      "normalized_source_sha256": "964b649234876e0be67065d8263308acd862ceff9185e92c072df52b2f800d20",
+      "prepared_sha256": "09ce2f96a27d56c19640da2b9f2da46599992e6261f5f4f9a6d97d0dd203b865"
+    }
+  ],
+  "native_compile": false,
+  "native_link": false,
+  "runtime": false,
+  "frozen_v18_untouched": true,
+  "actor_creation": false,
+  "server_or_database_modified": false,
+  "helper_sources": [
+    {
+      "path": "AutonomousPlayerAudit.cpp",
+      "sha256": "1938bb837e0a6b00f793530fe32873dd29bc9e6f93101904c24a1c944f46f8e2"
+    },
+    {
+      "path": "AutonomousPlayerAudit.h",
+      "sha256": "d6b48a1bcf2882dda661036b577843c319afd4133d1a8aec154eaa35bdf13ca5"
+    },
+    {
+      "path": "AuditEvidence.h",
+      "sha256": "baccd0db7bd5112f4a115e1043e64f435d2729cf6f8750d185afbac47afa0384"
+    },
+    {
+      "path": "needs-bridge/build_need_bridge.py",
+      "sha256": "fd05170317616ed23051c3153cc7777b508d3029d09380f5295fb01d2ddb410c"
+    },
+    {
+      "path": "needs-bridge/AutonomousNeedsBridge.cpp",
+      "sha256": "92b0b65881688245e6b631b055123f12e72c03e1f27655c4663e5c827d9883ad"
+    },
+    {
+      "path": "needs-bridge/AutonomousServiceTravel.cpp",
+      "sha256": "998fe1f90231a4bb67aef0c15f11a502c981dc4f43d0c6de1fd00a70713a643a"
+    },
+    {
+      "path": "needs-bridge/AutonomousNeedsBridge.h",
+      "sha256": "50eaa7bc80da78d70ac38f45e89585b8e10dbd690742a0ea309c2f14bdd60ac8"
+    }
+  ],
+  "patch_sha256": "9b9a9a38edf05465e40fb0f777fdbfbbbd245e890c0705757187eaa2613c487a"
+}

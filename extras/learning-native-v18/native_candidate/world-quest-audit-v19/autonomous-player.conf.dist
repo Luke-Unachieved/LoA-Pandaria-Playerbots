@@ -1,0 +1,11 @@
+# Restart-only configuration. Disabled until one existing bot's exact raw GUID is supplied.
+# Future native runtime logs in/relogs only this existing character after managed-account verification.
+# No actor creation or gear/gold/XP grants. No live server/database operation is performed by this source package.
+AiPlayerbot.AutonomousPlayerAudit.Enabled = 0
+AiPlayerbot.AutonomousPlayerAudit.ActorGuid = "0"
+AiPlayerbot.AutonomousPlayerAudit.HearthstoneRecovery = 0
+AiPlayerbot.AutonomousPlayerV19.NeedsBridge = 1
+
+# Keep the existing realm policy: AI base XP 1x, human base XP 5x.
+# This candidate observes actual per-player kill/quest/explore rates; it does not rewrite global rates.
+# Hearthstone 0 cooldown must be the actual loaded item/spell policy. No cooldown clearing is implemented.

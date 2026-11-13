@@ -1,0 +1,17 @@
+{
+  "source_paths_verified": 10,
+  "double_application_rejected": true,
+  "native_source_modified": false,
+  "compiled": false,
+  "runtime_observed": false,
+  "focused_review": "Raw priorities, native arrival/goal resume, retry cooldown and catalog lifetime reviewed; fixes applied; profession-only distant training documented gap.",
+  "files": {
+    "AutonomousNeedsBridge.cpp": "92b0b65881688245e6b631b055123f12e72c03e1f27655c4663e5c827d9883ad",
+    "AutonomousNeedsBridge.h": "50eaa7bc80da78d70ac38f45e89585b8e10dbd690742a0ea309c2f14bdd60ac8",
+    "AutonomousServiceTravel.cpp": "998fe1f90231a4bb67aef0c15f11a502c981dc4f43d0c6de1fd00a70713a643a",
+    "PATCH-MANIFEST.txt": "3416522428d0bee1a43dfa59bcf704800a84b7836e8b3497888fc48956abbd11",
+    "README.md": "63566fb57e6786e7018b1f8acdca2dd4f0d4a4925f01c0efcb15678c33925130",
+    "build_need_bridge.py": "fd05170317616ed23051c3153cc7777b508d3029d09380f5295fb01d2ddb410c",
+    "source-baseline.json": "b8794aa46d557ca9bded3097658484de3b15e3c835df83b2db095a491c8fb73d"
+  }
+}

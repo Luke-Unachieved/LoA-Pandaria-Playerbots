@@ -1,0 +1,11 @@
+{
+  "schema": "v19-focused-checks-v1",
+  "exact_native_seams": 31,
+  "git_patch_apply_and_final_hashes": true,
+  "source_inputs_unchanged": true,
+  "standalone_evidence_and_recovery_test": true,
+  "native_compile": false,
+  "native_link": false,
+  "runtime": false,
+  "evidence_scope": "Primitive progress/invalid-evidence handling, bounded legal recovery and login backoff only; no native gameplay or login proof"
+}
