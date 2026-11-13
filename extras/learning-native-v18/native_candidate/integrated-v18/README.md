@@ -38,3 +38,9 @@ Still missing: repeat finished-dungeon exit/requeue, autonomous10/25 raid entry,
 ## Reuse
 
 LoA native Engine, existing class/action execution, Group/LFG, V14 raid constraints, V15 cast identities/reservation book and V16 attempt book are retained. External research repositories are pinned in the lab reuse map; framework research is not falsely described as copied/installed production code. No native test-double header or test executable is part of this source increment.
+
+## First real Windows compile and include-closure correction
+
+Parent verified the first Engine object compiled in20.99seconds, SHA256 `ff8988a2fe1890ac53358bfa9430de21ccf9df23ae5ac47b2173557083b705ac`. The second PlayerbotAI compilation then failed at InterruptObserver.h:3 because its original V14 response did not include the V15 cast-receipt directory. This is a real compiler result, not a fixture.
+
+The compile plan now explicitly adds the original V15 cast-receipts/action-runtime and V11 pending-attempt native directories for all15jobs and checks eight exact native header hashes. No duplicated CastReceipt header copies are introduced: the authority's explicit relative imports and all new bare imports must resolve to the same original native files. This also preserves the source-local V11 WarshamanWindow/PendingAttempt pair when the coordinated interrupt TU is staged elsewhere; it must not silently resolve the older V7 window header. New observer/dependency headers remain first. Existing source/patch/final hashes and all formal binaries are unchanged by this build-only correction. Later TU/compiler results remain unverified.

@@ -33,6 +33,10 @@ foreach ($dep in $plan.source_files) {
   if (!$p.StartsWith(($SourceRoot.TrimEnd('\')+'\'),[StringComparison]::OrdinalIgnoreCase)) { throw 'Source escapes reviewed root.' }
   RequireHash $p $dep.sha256
 }
+# Reuse one native header identity even when a source file is staged elsewhere.
+if ($plan.PSObject.Properties.Name -contains 'native_headers') {
+  foreach ($header in $plan.native_headers) { RequireHash (CheckedPath $header.path) $header.sha256 }
+}
 $prepared=@();$seen=@{}
 foreach ($job in $plan.jobs) {
   if ($job.name -notmatch '^[a-zA-Z0-9_-]+$' -or $seen.ContainsKey($job.name)) { throw 'Invalid/duplicate job name.' }
@@ -59,6 +63,13 @@ foreach ($job in $plan.jobs) {
     $resolved=CheckedPath (Join-Path $SourceRoot $dir)
     if (!(Test-Path -LiteralPath $resolved -PathType Container)) { throw "Missing include directory: $resolved" }
     $includes += '-I"'+$resolved+'"'
+  }
+  if ($job.PSObject.Properties.Name -contains 'native_include_dirs') {
+    foreach ($dir in $job.native_include_dirs) {
+      $resolved=CheckedPath $dir
+      if (!(Test-Path -LiteralPath $resolved -PathType Container)) { throw "Missing native include directory: $resolved" }
+      $includes += '-I"'+$resolved+'"'
+    }
   }
   $obj=CheckedPath (Join-Path $OutputRoot ($job.name+'.obj'))
   $pdb=CheckedPath (Join-Path $OutputRoot ($job.name+'.pdb'))

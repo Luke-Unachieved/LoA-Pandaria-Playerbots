@@ -126,6 +126,11 @@
       "include_dirs": [
         "new",
         "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
     },
     {
@@ -139,6 +144,11 @@
       "include_dirs": [
         "new",
         "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
     },
     {
@@ -152,6 +162,11 @@
       "include_dirs": [
         "new",
         "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
     },
     {
@@ -165,6 +180,11 @@
       "include_dirs": [
         "new",
         "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
     },
     {
@@ -178,6 +198,11 @@
       "include_dirs": [
         "new",
         "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
     },
     {
@@ -191,6 +216,11 @@
       "include_dirs": [
         "new",
         "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
     },
     {
@@ -204,6 +234,11 @@
       "include_dirs": [
         "new",
         "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
     },
     {
@@ -217,6 +252,11 @@
       "include_dirs": [
         "new",
         "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
     },
     {
@@ -230,6 +270,11 @@
       "include_dirs": [
         "new",
         "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
     },
     {
@@ -243,7 +288,12 @@
       ],
       "name": "EngineShadowObserverV17",
       "source": "new/EngineShadowObserverV17.cpp",
-      "source_sha256": "6d423643b5355a88411c3503960c31936391c3f7f3319e52829dcd6ce25d13f9"
+      "source_sha256": "6d423643b5355a88411c3503960c31936391c3f7f3319e52829dcd6ce25d13f9",
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
+      ]
     },
     {
       "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
@@ -256,7 +306,12 @@
       ],
       "name": "NativeShadowCollectorV18",
       "source": "new/NativeShadowCollectorV18.cpp",
-      "source_sha256": "2d4915b07e9e81e3a00294ee02ee00ab309c9ba181560a8d959d33346879a321"
+      "source_sha256": "2d4915b07e9e81e3a00294ee02ee00ab309c9ba181560a8d959d33346879a321",
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
+      ]
     },
     {
       "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
@@ -269,7 +324,12 @@
       ],
       "name": "BoundedShadowWriterV18",
       "source": "new/BoundedShadowWriterV18.cpp",
-      "source_sha256": "75b8e2623b47c61142f044507d751c4744b5ce2c791b76a065043a4fd8f6b2a8"
+      "source_sha256": "75b8e2623b47c61142f044507d751c4744b5ce2c791b76a065043a4fd8f6b2a8",
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
+      ]
     },
     {
       "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
@@ -282,7 +342,12 @@
       ],
       "name": "ResponseBindingV18",
       "source": "new/ResponseBindingV18.cpp",
-      "source_sha256": "55c8c204cc742b74b9ecb2f12f1294ab2ba695fa21f5820ab7844b8df736a73c"
+      "source_sha256": "55c8c204cc742b74b9ecb2f12f1294ab2ba695fa21f5820ab7844b8df736a73c",
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
+      ]
     },
     {
       "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
@@ -295,7 +360,12 @@
       ],
       "name": "InterruptObserver",
       "source": "new/InterruptObserver.cpp",
-      "source_sha256": "5053fa882f92ab038ed4ceb1f25cd1929bf7b3f10cd282769eac3ed74f4b99b1"
+      "source_sha256": "5053fa882f92ab038ed4ceb1f25cd1929bf7b3f10cd282769eac3ed74f4b99b1",
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
+      ]
     },
     {
       "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
@@ -308,10 +378,49 @@
       ],
       "name": "NativeBackgroundTraining",
       "source": "new/NativeBackgroundTraining.cpp",
-      "source_sha256": "c0bd50280300df7bb768eefdfb9e9ad971b900a6e0c1f88376ec1330a3516249"
+      "source_sha256": "c0bd50280300df7bb768eefdfb9e9ad971b900a6e0c1f88376ec1330a3516249",
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
+      ]
     }
   ],
   "native_compile_verified": false,
   "linked": false,
-  "deployed": false
+  "deployed": false,
+  "native_headers": [
+    {
+      "path": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\CastReceipts.h",
+      "sha256": "8c766cd165eeb8f76aabcdface6b4ddacf271bcb8e33c832630f0580fe4203d6"
+    },
+    {
+      "path": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\CastReceiptBook.h",
+      "sha256": "3464d2518b5775abc6176ce4dc73189ad24db83b997d625bec9f2db26ff40e61"
+    },
+    {
+      "path": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\NativeCastSourceResolver.h",
+      "sha256": "f335671ec6be8cc016426f1ad7f45b085cd36abd6a988a91f8870d0220369d1f"
+    },
+    {
+      "path": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\MechanicActionAuthority.h",
+      "sha256": "39e4b2926a14fca3ee6a74ef0d2a146e0cfec325628be483cbdf681bc19a10b2"
+    },
+    {
+      "path": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\ActionLifecycleBook.h",
+      "sha256": "c3b0e264cee8dad8a991b6dee62e8fa14db555f8a3b83a03bba0af65364f6af1"
+    },
+    {
+      "path": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\RaidActionCatalog.h",
+      "sha256": "0d584832ae59756d2e346394e8cdd6d8b154612321caebddcc19f91cc3607283"
+    },
+    {
+      "path": "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11\\WarshamanWindow.h",
+      "sha256": "7989e991e2ed3951b684c1d1ffe8f5bd9f66294518b251907a50aa3f20e2a370"
+    },
+    {
+      "path": "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11\\PendingAttempt.h",
+      "sha256": "c6bf4f554d00396efc212e6c0defcb9bd0795143c6b1b68a3e44b5ebb0ff9e14"
+    }
+  ]
 }
