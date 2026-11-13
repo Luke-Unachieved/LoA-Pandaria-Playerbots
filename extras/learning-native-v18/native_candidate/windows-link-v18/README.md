@@ -1,6 +1,6 @@
 # V18 isolated Windows LINK entry
 
-This increment uses the original, hash-locked V15 `Link.rsp`. It changes eight quoted object tokens, prepends seven new objects before every library, and redirects only `/OUT`, `/MAP`, and `/IMPLIB`. The result contains 95 absolute overlay objects plus the six inherited relative worldserver objects. Every original library argument, including repeated `game.lib`, retains its position. F509 Worgen, guild, dungeon, hearthstone, and other inherited objects remain in the response.
+This increment uses the original, hash-locked V15 `Link.rsp`. It changes eight quoted object tokens, prepends eight new objects before every library, and redirects only `/OUT`, `/MAP`, and `/IMPLIB`. The result contains 96 absolute overlay objects plus the six inherited relative worldserver objects, 102 objects in total. Every original library argument, including repeated `game.lib`, retains its position. F509 Worgen, guild, dungeon, hearthstone, and other inherited objects remain in the response.
 
 There is no Windows access in the implementation workspace. Delivery and the local transform check do **not** claim successful MSVC LINK, valid native provenance, runtime collection, or deployability.
 
@@ -14,7 +14,9 @@ $nativeCandidate = Join-Path $repo 'extras\learning-native-v18\native_candidate'
 & "$nativeCandidate\windows-link-v18\Test-LinkResponse.ps1"
 ```
 
-After all 15 jobs have successful entries in the merged `build-v18\compile-results.json`, validate and write the canonical response plus input snapshot:
+The sixteenth job requires the genuine, complete `PlayerbotMgr.cpp` staged at `integrated-v18/native-api/PlayerbotMgr.cpp`, beside the bound `PlayerbotMgr.h`. Preserve the existing 15 successful receipts and select only `-OnlyJob native_playerbot_mgr` with `Build-Incremental.ps1 -Compile`; the entry revalidates and merges those 15 results while compiling the additional object. Actual baseline source/response provenance, header layout and ABI compatibility, and native explicit-object API audits remain required link gates. The candidate MAP must select `native_playerbot_mgr.obj` for both new APIs (`PlayerbotHolder::IsRaidOwnedBot` and `PlayerbotHolder::IsManagedLogin`) and the holder constructor, `AddPlayerBot`, and `GetPlayerBotsSnapshot`; mixing holder implementations from an archive is rejected.
+
+After all 16 jobs have successful entries in the merged `build-v18\compile-results.json`, validate and write the canonical response plus input snapshot:
 
 ```powershell
 $repo = 'E:\WRL-1112v1\RuntimeCheck-v1\LearningShadow-v18'
@@ -52,6 +54,6 @@ The transferred `persistent-constraints-v1\isolated-link-plan.json` (SHA256 `e01
 
 ## Receipts and limits
 
-Validation rechecks all 88 original object hashes, even the eight replaced objects. It checks the current source/header closure declared by the compile plan, all 15 successful source/object receipts and their required `response_sha256` against the actual compile responses, original compile inputs, the resolved object/resource/library files, evidence artifacts, the formal EXE, and installed linker. The input snapshot locks current libraries, since the transferred V15 manifest did not contain their hashes. It does not retroactively prove V15 library identity or compilation-time header identity.
+Validation rechecks all 88 original object hashes, even the eight replaced objects. It checks the current source/header closure declared by the compile plan, all 16 successful source/object receipts and their required `response_sha256` against the actual compile responses, original compile inputs, the resolved object/resource/library files, evidence artifacts, the formal EXE, and installed linker. The input snapshot locks current libraries, since the transferred V15 manifest did not contain their hashes. It does not retroactively prove V15 library identity or compilation-time header identity.
 
 `link-receipt.json` records native exit status, candidate output hashes/sizes, response and validation hashes, and before/after input/formal integrity. `link.log` retains stdout/stderr. Exit zero and EXE/MAP existence indicate native LINK completion only; native MAP/symbol/PE review and subsequent runtime verification remain separate. `/DEBUG:NONE`, `/INCREMENTAL:NO`, and other original linker flags are preserved: “incremental” here means replacing a limited object set, not enabling the MSVC incremental linker.

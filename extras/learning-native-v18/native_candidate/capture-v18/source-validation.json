@@ -17,5 +17,8 @@
   ],
   "startup_gate_fixture_checks_passed": 6,
   "startup_gate_production_acceptance_created": false,
-  "database_accessed": false
+  "database_accessed": false,
+  "startup_gate_fixture_source_sha256": "83d235567d29b0da39f7d4902d17cffa31a9531d2b8e2b7f880ee178b89c1e90",
+  "current_revision_change": "The validation now requires16nativejobs after adding genuineHolderTU. The six startup gate fixtures above were run against the prior15-job source; not rerun for this count-only change.",
+  "current_python_syntax_checked": true
 }

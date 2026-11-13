@@ -9,7 +9,15 @@
   "creature_native_forward_declaration": true,
   "whole_manager_directory_override": false,
   "active_header_layout_verified": false,
-  "actual_modules_library_api_symbols_verified": false,
-  "native_recompile_verified": false,
-  "link_allowed": false
+  "actual_modules_library_api_symbols_verified": true,
+  "native_recompile_verified": true,
+  "link_allowed": false,
+  "original_fifteen_native_units_compiled": true,
+  "actual_modules_library_required_symbols_present": false,
+  "native_api_provider": "new explicit native_playerbot_mgr.obj candidate, not old modules.lib",
+  "implementation_origin_sha256": "263feddd092098d84dfdfae429cbde4bf94f1c5731f51fb510363a806c1d3460",
+  "implementation_candidate_sha256": "6a8379b0d58f0c25dd3683fb1a8dc0bd357b61c50cb71b1b4a9dd8a6fa853494",
+  "implementation_native_compiled": false,
+  "tracker_native_closure_verified": false,
+  "active_cpp_currentness_verified": false
 }

@@ -24,8 +24,8 @@ def validate_link(receipt_path,receipt):
     require_hash(validation_path,receipt.get('validation_sha256'))
     validation=json.loads(validation_path.read_text(encoding='utf-8-sig'))
     jobs=validation.get('source_objects',[]);locks=validation.get('input_locks',[])
-    if validation.get('schema')!='native-v18-link-validation-v1' or len(jobs)!=15 or len({x['job'] for x in jobs})!=15 or not locks:
-        raise ValueError('Expected the complete native 15-job validation and input locks')
+    if validation.get('schema')!='native-v18-link-validation-v1' or len(jobs)!=16 or len({x['job'] for x in jobs})!=16 or not locks:
+        raise ValueError('Expected the complete native 16-job validation and input locks')
     locked={}
     for row in locks:
         path=Path(row['path'])

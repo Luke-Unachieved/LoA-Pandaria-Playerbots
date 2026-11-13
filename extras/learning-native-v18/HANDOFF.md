@@ -1,8 +1,10 @@
-# 当前检查点：V18 本地续编与链接
+# 当前检查点：15 项通过，补齐真实 Holder 实现
 
-主窗口实际 MSVC 编译已通过 14/15 项，最后一项 NativeBackgroundTraining 的头文件修正已推送 `2c6762312c0eebf0de0c87a51f804f1ee70d58fa`。请先读 `native_candidate/PARENT_LOCAL_ACTIONS.md`，只续编这一项；不要重跑已通过的 14 项。当前分支 `dev/learning-shadow-v18` 的源码位于 `extras/learning-native-v18/native_candidate`。
+主窗口报告原15/15 MSVC单元已通过，原生链接参数检查通过；从实际game.lib提取的SpellEffects对象CodeView校验值与当前源文件匹配。尚未LINK或开服。实际modules.lib不含新Holder管理接口，故只换头文件不够。
 
-本轮还提供 `windows-link-v18` 的实际候选链接入口、原生来源核对工具及 `capture-v18` 的限时后台采集脚本。它们尚未在 Windows 运行；仍需实际 PlayerbotHolder 实现/布局与 SpellEffects 来源核对。正式 F509 未替换、未链接部署、未开服、真实模型训练 episode 仍为 0。首次采集不代表三队自主打本训练已完成。以下旧记录按历史顺序保留，发生冲突时以本节和当前本地续作清单为准。
+本轮增加真实PlayerbotMgr.cpp为第16个单元，原15项全部复用，命令见native_candidate/PARENT_LOCAL_ACTIONS.md。原生CharacterLoginPending头/核心接线、现用Holder源/库成员来源仍需主窗口核对，不能用伪造跟踪器或桩函数补位。链接入口随之支持96显式/102总对象，仍无学习策略控制或真实训练episode。
+
+源码分支dev/learning-shadow-v18，目录extras/learning-native-v18/native_candidate。以下旧检查点按历史保留；以本节和当前续作文件为准。
 
 # 可学习队伍 AI — 接手入口
 

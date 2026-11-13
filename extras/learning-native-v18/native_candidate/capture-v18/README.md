@@ -4,7 +4,7 @@ These scripts prepare local configuration and optionally run the accepted candid
 
 ## Readiness before any process
 
-1. All15native objects compiled and linked with actual matching PlayerbotMgr API and SpellEffects provenance. Native link receipt must have candidate_accepted=true, current output hash and unchanged formal/input locks. The runner reopens the hash-bound sibling validation-receipt.json, requires all15native source/object jobs and rehashes every input lock, the canonical Link.rsp and the exact protected F509 formal EXE before validation or startup.
+1. All16native objects compiled and linked with actual matching PlayerbotMgr API and SpellEffects provenance. Native link receipt must have candidate_accepted=true, current output hash and unchanged formal/input locks. The runner reopens the hash-bound sibling validation-receipt.json, requires all15native source/object jobs and rehashes every input lock, the canonical Link.rsp and the exact protected F509 formal EXE before validation or startup.
 2. Parent confirms no simultaneous localization DB work and no worldserver process. MySQL should already be the existing configured service; these scripts do not start another DB/auth service. Authserver is unnecessary for this bot-only backend check.
 3. Read the actual native Main.cpp/CLI help if this build's `-c` or `server shutdown 0` differs. Those are the existing conventional server config/console interfaces; the wrapper records forced shutdown as incomplete if graceful shutdown fails.
 

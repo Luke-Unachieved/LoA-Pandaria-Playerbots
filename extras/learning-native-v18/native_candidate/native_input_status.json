@@ -1,6 +1,6 @@
 {
   "schema": "native-input-status-v1",
-  "updated_at_utc": "2026-11-13T23:37:01.246129+00:00",
+  "updated_at_utc": "2026-11-13T23:52:34.891637+00:00",
   "production": {
     "path": "E:\\WoW548\\Server\\worldserver.exe",
     "sha256": "F509E005DDF59360F8C3F7EEDB4C1396A2B145F6AD4A17C54FE553FB1DBC0223",
@@ -91,10 +91,10 @@
     "merged_build_tree": false
   },
   "remaining_inputs": [
-    "actual current PlayerbotHolder implementation symbols and compatible class layout in native modules.lib",
-    "SpellEffects source identity against extracted actual current game.lib member",
-    "single final NativeBackgroundTraining Windows compilation; existing 14 successful receipts are parent evidence",
-    "actual native LINK/MAP providers and controlled backend raw collection after localization coordination"
+    "actual active PlayerbotMgr.cpp source/member identity, minimal-delta preservation review",
+    "actual CharacterLoginPending header and native core hooks availability/provenance",
+    "16th unit compile, explicit Holder MAP provider, full native LINK",
+    "controlled native raw capture after localization coordination"
   ],
   "protected_scope": {
     "production_exe_unchanged": true,
@@ -119,7 +119,7 @@
     "source_patch_verified": true,
     "raw_sources": 9,
     "new_helper_dependencies": 18,
-    "compile_jobs": 15,
+    "compile_jobs": 16,
     "native_compile": false,
     "native_link": false,
     "deployed": false,
@@ -133,12 +133,15 @@
       }
     },
     "playerbot_ai_first_attempt": "C1083 CastReceipts.h missing; include closure corrected in 5bcff1a",
-    "all_fifteen_native_units_compiled": false,
-    "actual_native_compile_status": "14/15 passed, reported by parent; final NativeBackgroundTraining needs selective resume",
-    "compiled_units_count": 14,
+    "all_fifteen_native_units_compiled": true,
+    "actual_native_compile_status": "Parent confirmed15/15 prior units passed; new16th native_playerbot_mgr not compiled",
+    "compiled_units_count": 15,
     "compiled_units_evidence": "parent Windows compiler report; individual object hashes remain in local build-v18/compile-results.json",
     "final_compile_failure": "Creature declaration and PlayerbotHolder header selection corrected in 2c676; matching modules.lib implementation still requires actual inspection",
     "link_entry": "windows-link-v18",
-    "bounded_capture_entry": "capture-v18"
+    "bounded_capture_entry": "capture-v18",
+    "holder_implementation_pending_native_compile": true,
+    "spelleffects_source_identity": "Parent actual game.lib member extraction+CodeView source SHA256 match",
+    "actual_modules_api_status": "Direct native dumpbin exit0; IsRaidOwnedBot/IsManagedLogin absent"
   }
 }

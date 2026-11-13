@@ -26,11 +26,11 @@ foreach ($entry in $overlay.object_overlays) {
   $expected[$index]='"'+(Join-Path $compile $entry.new_object)+'"'
 }
 $unchangedBefore=@($expected | Where-Object { $_ -notmatch '^[-/](OUT|MAP|IMPLIB):' })
-$unchangedAfter=@($after[7..($after.Count-1)] | Where-Object { $_ -notmatch '^[-/](OUT|MAP|IMPLIB):' })
+$unchangedAfter=@($after[8..($after.Count-1)] | Where-Object { $_ -notmatch '^[-/](OUT|MAP|IMPLIB):' })
 if (($unchangedBefore -join "`n") -cne ($unchangedAfter -join "`n")) { throw 'Unapproved original token change.' }
-if ($after[0..6] -contains $null -or $result.explicit_objects -ne 95 -or $result.total_objects -ne 101) { throw 'Wrong candidate object composition.' }
+if ($after[0..7] -contains $null -or $result.explicit_objects -ne 96 -or $result.total_objects -ne 102) { throw 'Wrong candidate object composition.' }
 $rejects=0
 try { [void](Convert-LinkResponse ($original+' '+$before[0]) $overlay $compile $candidate) } catch { $rejects++ }
 try { [void](Convert-LinkResponse ($original.Replace('"'+$overlay.object_overlays[0].replaces_explicit_object+'"','')) $overlay $compile $candidate) } catch { $rejects++ }
 if ($rejects -ne 2) { throw 'Duplicate/missing-object rejection failed.' }
-Write-Output 'PASS: actual V15 response -> eight exact replacements + seven prepended objects; 95 explicit/101 total objects; all 37 library tokens and other original tokens preserved; duplicate/missing objects rejected. No native LINK executed.'
+Write-Output 'PASS: actual V15 response -> eight exact replacements + eight prepended objects; 96 explicit/102 total objects; all 37 library tokens and other original tokens preserved; duplicate/missing objects rejected. No native LINK executed.'

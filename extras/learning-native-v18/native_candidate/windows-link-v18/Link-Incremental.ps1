@@ -56,6 +56,16 @@ function ResolveInput([string]$Token,[string]$Root,[string[]]$LibDirs) {
   }
   throw "Cannot resolve linker input through cwd/LIB: $value"
 }
+function PlayerbotHeaderBinding($SourceObject,[string]$BindingHeader,[string]$LiteralInclude,[bool]$AllowForced) {
+  $forced=@(Get-LinkTokens ([IO.File]::ReadAllText($SourceObject.compile_response)) | Where-Object { $_ -match '^[-/]FI' } | ForEach-Object { FullPath (([regex]::Replace($_,'^[-/]FI','','IgnoreCase')).Trim('"')) })
+  if ($AllowForced -and $forced.Count -eq 1 -and $forced[0] -eq $BindingHeader) { return 'compiler-forced-include' }
+  $text=[IO.File]::ReadAllText($SourceObject.source)
+  $includes=[regex]::Matches($text,'(?m)^[ \t]*#[ \t]*include[ \t]+(?:"(?<quoted>[^"\r\n]+)"|<(?<system>[^>\r\n]+)>)')
+  if ($forced.Count -ne 0 -or $includes.Count -eq 0 -or $includes[0].Groups['quoted'].Value -cne $LiteralInclude) { throw "Expected first literal $LiteralInclude include with no forced header: $($SourceObject.source)" }
+  $included=FullPath (Join-Path (Split-Path -Parent $SourceObject.source) $includes[0].Groups['quoted'].Value)
+  if ($included -ne $BindingHeader -or $text.Substring(0,$includes[0].Index) -notmatch '(?m)^[ \t]*class[ \t]+Creature[ \t]*;[ \t]*$') { throw "The first native header must be the accepted PlayerbotMgr.h after the Creature declaration: $($SourceObject.source)" }
+  return 'source-first-relative-include'
+}
 
 $utf8=New-Object Text.UTF8Encoding($false)
 $PlanPath=FullPath $PlanPath;$SourceRoot=FullPath $SourceRoot
@@ -63,7 +73,7 @@ $CompileRoot=FullPath $CompileRoot;$CandidateRoot=FullPath $CandidateRoot
 if (!$OverlayPath) { $OverlayPath=Join-Path (Split-Path -Parent $PlanPath) 'link-overlay.json' }
 $OverlayPath=FullPath $OverlayPath
 $plan=ReadJson $PlanPath;$overlay=ReadJson $OverlayPath
-if ($plan.schema -ne 'native-shadow-incremental-compile-v1' -or @($plan.jobs).Count -ne 15) { throw 'Expected the complete 15-job V18 compile plan.' }
+if ($plan.schema -ne 'native-shadow-incremental-compile-v1' -or @($plan.jobs).Count -ne 16) { throw 'Expected the complete 16-job V18 compile plan.' }
 $formal=FullPath $plan.formal_exe
 if ($formal -ne 'E:\WoW548\Server\worldserver.exe' -or $plan.formal_sha256 -ne 'f509e005ddf59360f8c3f7eedb4c1396a2b145f6ad4a17c54fe553fb1dbc0223') { throw 'Expected the protected F509 formal path and baseline.' }
 if ((Under $CandidateRoot (Split-Path -Parent $formal)) -or (Under $CandidateRoot $SourceRoot) -or $CandidateRoot -eq $CompileRoot) { throw 'Use a dedicated candidate directory outside formal/source/compile roots.' }
@@ -88,7 +98,7 @@ foreach ($item in $manifest) {
 }
 $compiled=ReadJson (Join-Path $CompileRoot 'compile-results.json')
 [void](LockFile (Join-Path $CompileRoot 'compile-results.json') 'compile-receipt')
-if ($compiled.schema -ne 'native-shadow-compile-receipt-v1' -or $compiled.formal_unchanged -ne $true -or @($compiled.jobs).Count -ne 15) { throw 'A merged successful receipt for all 15 compile jobs is required.' }
+if ($compiled.schema -ne 'native-shadow-compile-receipt-v1' -or $compiled.formal_unchanged -ne $true -or @($compiled.jobs).Count -ne 16) { throw 'A merged successful receipt for all 16 compile jobs is required.' }
 foreach ($file in $plan.source_files) {
   $path=FullPath (Join-Path $SourceRoot $file.path)
   if (!(Under $path $SourceRoot)) { throw 'Reviewed source escapes SourceRoot.' }
@@ -117,7 +127,7 @@ foreach ($job in $plan.jobs) {
   [void](LockFile $rsp 'actual-compile-response' $receipt[0].response_sha256)
   $compileText=[IO.File]::ReadAllText($rsp)
   if (@(Get-LinkTokens $compileText | Where-Object { $_ -ceq ('"'+$source+'"') }).Count -ne 1 -or @([regex]::Matches($compileText,'(?i)(?<!\S)[-/]Fo"'+[regex]::Escape($object)+'"(?!\S)')).Count -ne 1) { throw "Compile response source/object mismatch: $rsp" }
-  $sourceObjects += [pscustomobject]@{job=$job.name;source=$source;source_sha256=$job.source_sha256;object=$object;object_sha256=$receipt[0].object_sha256;compile_response=$rsp}
+  $sourceObjects += [pscustomobject]@{job=$job.name;source=$source;source_sha256=$job.source_sha256;object=$object;object_sha256=$receipt[0].object_sha256;compile_response=$rsp;compile_response_sha256=$receipt[0].response_sha256}
 }
 
 # Import only the already installed, pinned toolchain environment; nothing is installed.
@@ -205,34 +215,64 @@ if ($SpellEffectsAcceptance) {
   if ($reconstructed -cne $baseline) { throw 'Removing the three observer additions does not reproduce current SpellEffects source.' }
   $acceptanceVerified=$true
 }
-$playerbotVerified=$false;$playerbotBinding=$null
+$playerbotVerified=$false;$playerbotBinding=$null;$playerbotOldMemberLeaf=$null
+$playerbotTargets=@(
+  [pscustomobject]@{name='PlayerbotHolder::IsManagedLogin';symbol='\?IsManagedLogin@PlayerbotHolder@@\S+'},
+  [pscustomobject]@{name='PlayerbotHolder::IsRaidOwnedBot';symbol='\?IsRaidOwnedBot@PlayerbotHolder@@\S+'},
+  [pscustomobject]@{name='PlayerbotHolder::PlayerbotHolder';symbol='\?\?0PlayerbotHolder@@\S+'},
+  [pscustomobject]@{name='PlayerbotHolder::AddPlayerBot';symbol='\?AddPlayerBot@PlayerbotHolder@@\S+'},
+  [pscustomobject]@{name='PlayerbotHolder::GetPlayerBotsSnapshot';symbol='\?GetPlayerBotsSnapshot@PlayerbotHolder@@\S+'}
+)
 if ($PlayerbotAcceptance) {
   $PlayerbotAcceptance=FullPath $PlayerbotAcceptance
   [void](LockFile $PlayerbotAcceptance 'playerbot-api-acceptance')
   $api=ReadJson $PlayerbotAcceptance
   $modulesPath=FullPath (Join-Path $WorkingDir 'modules\modules.lib')
-  if ($api.schema -ne 'native-v18-playerbot-api-acceptance-v1' -or $api.decision -ne 'accepted' -or !$api.reviewer -or !$api.rationale -or (FullPath $api.modules_library.path) -ne $modulesPath) { throw 'Invalid native PlayerbotMgr API acceptance.' }
+  if ($api.schema -ne 'native-v18-playerbot-api-acceptance-v2' -or $api.decision -ne 'accepted' -or !$api.reviewer -or !$api.rationale -or (FullPath $api.modules_library.path) -ne $modulesPath) { throw 'Invalid explicit PlayerbotMgr implementation acceptance.' }
   [void](LockFile $modulesPath 'accepted-modules-library' $api.modules_library.sha256)
   [void](LockFile $api.binding_header.path 'accepted-playerbot-api-header' $api.binding_header.sha256)
+  [void](LockFile $api.active_header.path 'accepted-active-playerbot-header' $api.active_header.sha256)
+  [void](LockFile $api.provided_source.path 'accepted-provided-playerbot-source' $api.provided_source.sha256)
+  [void](LockFile $api.baseline_source.path 'accepted-module-baseline-playerbot-source' $api.baseline_source.sha256)
+  [void](LockFile $api.baseline_object.path 'accepted-module-baseline-playerbot-object' $api.baseline_object.sha256)
+  if (!$api.baseline_object.archive_member) { throw 'The reviewed modules.lib baseline member name is required.' }
+  $playerbotOldMemberLeaf=[IO.Path]::GetFileName($api.baseline_object.archive_member.Replace('/','\'))
+  if (!$playerbotOldMemberLeaf -or $playerbotOldMemberLeaf -notmatch '(?i)\.obj$' -or $playerbotOldMemberLeaf -eq 'native_playerbot_mgr.obj') { throw 'Invalid baseline PlayerbotMgr archive member name.' }
   $bindingHeader=FullPath $api.binding_header.path
   $scheduler=@($sourceObjects | Where-Object job -eq 'NativeBackgroundTraining')[0]
-  $forcedHeaders=@(Get-LinkTokens ([IO.File]::ReadAllText($scheduler.compile_response)) | Where-Object { $_ -match '^[-/]FI' } | ForEach-Object { FullPath (([regex]::Replace($_,'^[-/]FI','','IgnoreCase')).Trim('"')) })
-  if (@($forcedHeaders | Where-Object { $_ -eq $bindingHeader }).Count -eq 1) {
-    $bindingMode='compiler-forced-include'
-  } else {
-    $schedulerText=[IO.File]::ReadAllText($scheduler.source)
-    $includes=[regex]::Matches($schedulerText,'(?m)^[ \t]*#[ \t]*include[ \t]+(?:"(?<quoted>[^"\r\n]+)"|<(?<system>[^>\r\n]+)>)')
-    if ($forcedHeaders.Count -ne 0 -or $includes.Count -eq 0 -or $includes[0].Groups['quoted'].Value -cne '../native-api/PlayerbotMgr.h') { throw 'Scheduler must bind the verified API via its exact /FI token or first literal ../native-api/PlayerbotMgr.h include, before every native include chain.' }
-    $includedHeader=FullPath (Join-Path (Split-Path -Parent $scheduler.source) $includes[0].Groups['quoted'].Value)
-    if ($includedHeader -ne $bindingHeader -or $schedulerText.Substring(0,$includes[0].Index) -notmatch '(?m)^[ \t]*class[ \t]+Creature[ \t]*;[ \t]*$') { throw 'The first scheduler include must resolve to the accepted header and follow the Creature forward declaration.' }
-    # This source was already hash-checked against both the plan and its actual compile receipt.
-    $bindingMode='source-first-relative-include'
+  $manager=@($sourceObjects | Where-Object job -eq 'native_playerbot_mgr')
+  if ($manager.Count -ne 1 -or $api.implementation.job -cne 'native_playerbot_mgr') { throw 'The complete explicit native_playerbot_mgr implementation is required.' }
+  $manager=$manager[0]
+  foreach ($key in @('source','object','compile_response')) {
+    $accepted=$api.implementation.$key
+    if ((FullPath $accepted.path) -ne $manager.$key -or $accepted.sha256 -ne $manager.($key+'_sha256')) { throw "Playerbot implementation acceptance predates the actual compiled $key." }
   }
-  $playerbotBinding=[pscustomobject]@{mode=$bindingMode;header=$bindingHeader;header_sha256=$api.binding_header.sha256;source=$scheduler.source;source_sha256=$scheduler.source_sha256;compile_response=$scheduler.compile_response}
-  foreach ($kind in @('native-api-symbols','class-layout-review')) {
+  # The genuine provided source must reproduce the complete TU after removing
+  # only the include-order prelude; the parent separately reviews its active baseline delta.
+  $provided=[IO.File]::ReadAllText($api.provided_source.path).Replace("`r`n","`n")
+  $reconstructed=[IO.File]::ReadAllText($manager.source).Replace("`r`n","`n")
+  $prelude="// Complete Creature before Player.h -> ConditionMgr.h in this native include order.`nclass Creature;`n"
+  $pattern='(?m)^'+[regex]::Escape($prelude)+'(?=#include "PlayerbotMgr.h")'
+  if ([regex]::Matches($reconstructed,$pattern).Count -ne 1) { throw 'Expected exactly the reviewed PlayerbotMgr include-order prelude immediately before its first native include.' }
+  $reconstructed=[regex]::Replace($reconstructed,$pattern,'')
+  if ($reconstructed -cne $provided) { throw 'Prepared PlayerbotMgr implementation does not reproduce the accepted provided source after removing its prelude.' }
+  $bindingMode=PlayerbotHeaderBinding $scheduler $bindingHeader '../native-api/PlayerbotMgr.h' $true
+  $managerBindingMode=PlayerbotHeaderBinding $manager $bindingHeader 'PlayerbotMgr.h' $false
+  $playerbotBinding=[pscustomobject]@{mode=$bindingMode;header=$bindingHeader;header_sha256=$api.binding_header.sha256;source=$scheduler.source;source_sha256=$scheduler.source_sha256;compile_response=$scheduler.compile_response;
+    implementation=[pscustomobject]@{mode=$managerBindingMode;job=$manager.job;source=$manager.source;source_sha256=$manager.source_sha256;object=$manager.object;object_sha256=$manager.object_sha256;compile_response=$manager.compile_response;compile_response_sha256=$manager.compile_response_sha256};
+    baseline_source=$api.baseline_source;baseline_object=$api.baseline_object;provided_source=$api.provided_source}
+  foreach ($kind in @('native-api-symbols','class-layout-review','baseline-source-binding','module-member-preservation')) {
     $evidence=@($api.evidence | Where-Object kind -eq $kind)
     if ($evidence.Count -ne 1) { throw "One $kind PlayerbotMgr audit artifact is required." }
     [void](LockFile $evidence[0].path ('audit-'+$kind) $evidence[0].sha256)
+  }
+  foreach ($evidence in $api.evidence) { [void](LockFile $evidence.path ('audit-'+$evidence.kind) $evidence.sha256) }
+  $symbolReport=[IO.File]::ReadAllText(@($api.evidence | Where-Object kind -eq 'native-api-symbols')[0].path)
+  foreach ($target in $playerbotTargets) {
+    # Real dumpbin /symbols definitions have a section and External storage;
+    # archive-index strings and UNDEF references cannot satisfy this gate.
+    $pattern='(?m)^\s*[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+SECT[0-9A-Fa-f]+\s+[^|\r\n]*\bExternal\s+\|\s+'+$target.symbol+'(?=\s|$)'
+    if ([regex]::Matches($symbolReport,$pattern).Count -ne 1) { throw "Explicit PlayerbotMgr object lacks a unique actual definition record for $($target.name)." }
   }
   $playerbotVerified=$true
 }
@@ -242,7 +282,7 @@ $validationPath=Join-Path $CandidateRoot 'validation-receipt.json'
 $lockList=@($locks.Values | Sort-Object path)
 $snapshot=[pscustomobject]@{schema='native-v18-link-validation-v1';working_dir=$WorkingDir;cwd_selection=$cwdSelection;
   historic_cwd_evidence=$cwdEvidence;historic_record_is_execution_proof=$false;toolchain=[pscustomobject]@{link_exe=$linkExe;vc_tools=$buildEnv['VCToolsVersion'];sdk=$buildEnv['WindowsSDKVersion'];lib_search_paths=$libDirs};
-  original_explicit_objects=88;replacement_objects=8;added_objects=7;candidate_explicit_objects=95;candidate_total_objects=101;
+  original_explicit_objects=88;replacement_objects=8;added_objects=8;candidate_explicit_objects=96;candidate_total_objects=102;
   source_objects=$sourceObjects;link_inputs=$linkInputs;input_locks=$lockList;spelleffects_acceptance_verified=$acceptanceVerified;playerbot_api_acceptance_verified=$playerbotVerified;playerbot_api_binding=$playerbotBinding;
   native_link_executed=$false;deployed=$false;server_started=$false;runtime_collection_verified=$false;model_activated=$false}
 if (!$Link) {
@@ -251,11 +291,11 @@ if (!$Link) {
   [IO.File]::WriteAllText($rspOut,$transformed.text,$utf8)
   $snapshot | Add-Member NoteProperty transformed_response_sha256 (Hash $rspOut)
   WriteJson $validationPath $snapshot
-  Write-Output "Validated 15 compiled jobs; wrote canonical Link.rsp and input locks. No LINK executed. SpellEffects acceptance: $acceptanceVerified; PlayerbotMgr API acceptance: $playerbotVerified"
+  Write-Output "Validated 16 compiled jobs; wrote canonical Link.rsp and input locks. No LINK executed. SpellEffects acceptance: $acceptanceVerified; explicit PlayerbotMgr acceptance: $playerbotVerified"
   return
 }
 if (!$acceptanceVerified) { throw 'LINK requires tool-supported SpellEffects provenance/minimal-delta audit acceptance; no boolean bypass exists.' }
-if (!$playerbotVerified) { throw 'LINK requires actual modules.lib symbol and class-layout audit acceptance for the PlayerbotMgr API.' }
+if (!$playerbotVerified) { throw 'LINK requires explicit PlayerbotMgr definitions, actual source/member provenance, preservation and class-layout audit acceptance.' }
 $prior=ReadJson $validationPath
 if ($prior.schema -ne $snapshot.schema -or $prior.working_dir -ne $WorkingDir -or $prior.spelleffects_acceptance_verified -ne $true -or $prior.playerbot_api_acceptance_verified -ne $true) { throw 'Run validation with these same parameters and accepted evidence before -Link.' }
 if (($prior.input_locks|ConvertTo-Json -Depth 5 -Compress) -cne ($lockList|ConvertTo-Json -Depth 5 -Compress)) { throw 'Inputs changed after validation; review and rerun validation.' }
@@ -269,6 +309,9 @@ $linkReceipt=[ordered]@{schema='native-v18-link-receipt-v1';started_utc=[DateTim
   linked=$false;outputs=@();formal_unchanged=$false;input_locks_unchanged=$false;deployed=$false;server_started=$false;runtime_collection_verified=$false;model_activated=$false}
 $linkReceipt.spelleffects_providers_verified=$false
 $linkReceipt.spelleffects_map_lines=@()
+$linkReceipt.playerbot_providers_verified=$false
+$linkReceipt.playerbot_map_lines=@()
+$linkReceipt.playerbot_archive_provider_lines=@()
 $linkReceipt.candidate_accepted=$false
 $linkReceipt.failure=$null
 try {
@@ -300,6 +343,20 @@ try {
     $linkReceipt.spelleffects_map_lines += $provider[0]
   }
   $linkReceipt.spelleffects_providers_verified=$true
+  foreach ($target in $playerbotTargets) {
+    $pattern='^\s*[0-9A-Fa-f]{4}:[0-9A-Fa-f]+\s+'+$target.symbol+'\s+[0-9A-Fa-f]+\s+f(?:\s|$)'
+    $provider=@($mapLines | Where-Object { $_ -match $pattern })
+    if ($provider.Count -ne 1 -or $provider[0] -notmatch '(?i)(?:^|[\\/\s:])native_playerbot_mgr\.obj(?:\s|$)') { throw "Candidate MAP does not uniquely select native_playerbot_mgr.obj for $($target.name). Inspect MAP and VERBOSE:LIB output; do not accept candidate." }
+    $linkReceipt.playerbot_map_lines += $provider[0]
+  }
+  # Reject Holder public functions from the reviewed old archive member. Match
+  # public symbols only, excluding $unwind$/$pdata$ metadata and other members' inline COMDATs.
+  $oldProvider='(?i)(?:^|[\\/\s:])'+[regex]::Escape($playerbotOldMemberLeaf)+'(?:\s|$)'
+  $linkReceipt.playerbot_archive_provider_lines=@($mapLines | Where-Object {
+    $_ -match '^\s*[0-9A-Fa-f]{4}:[0-9A-Fa-f]+\s+\?(?:\S*@PlayerbotHolder@@|\?(?:[0-9A-Z]|_[A-Z])PlayerbotHolder@@)\S*\s+[0-9A-Fa-f]+\s+f(?:\s|$)' -and $_ -match $oldProvider
+  })
+  if ($linkReceipt.playerbot_archive_provider_lines.Count -ne 0) { throw 'Candidate MAP mixes explicit PlayerbotHolder implementation with the old modules.lib Holder member. Candidate is not accepted.' }
+  $linkReceipt.playerbot_providers_verified=$true
 } catch {
   $linkReceipt.failure=$_.Exception.Message
   throw
@@ -308,7 +365,7 @@ try {
   $changed=@($lockList | Where-Object { !(Test-Path -LiteralPath $_.path -PathType Leaf) -or (Hash $_.path) -ne $_.sha256 })
   $linkReceipt.input_locks_unchanged=$changed.Count -eq 0
   if (!$linkReceipt.formal_unchanged -or !$linkReceipt.input_locks_unchanged) { $linkReceipt.failure='Inputs/formal EXE changed during link.' }
-  $linkReceipt.candidate_accepted=$linkReceipt.linked -and $linkReceipt.spelleffects_providers_verified -and $linkReceipt.formal_unchanged -and $linkReceipt.input_locks_unchanged -and !$linkReceipt.failure
+  $linkReceipt.candidate_accepted=$linkReceipt.linked -and $linkReceipt.spelleffects_providers_verified -and $linkReceipt.playerbot_providers_verified -and $linkReceipt.formal_unchanged -and $linkReceipt.input_locks_unchanged -and !$linkReceipt.failure
   $linkReceipt.finished_utc=[DateTime]::UtcNow.ToString('o')
   WriteJson (Join-Path $CandidateRoot 'link-receipt.json') $linkReceipt
   if (!$linkReceipt.formal_unchanged -or !$linkReceipt.input_locks_unchanged) { throw 'Inputs/formal EXE changed during link. Candidate is not accepted; coordinate with the input owner.' }

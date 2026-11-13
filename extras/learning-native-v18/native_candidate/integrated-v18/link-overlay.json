@@ -80,14 +80,19 @@
       "job": "NativeBackgroundTraining",
       "replaces_explicit_object": null,
       "new_object": "NativeBackgroundTraining.obj"
+    },
+    {
+      "job": "native_playerbot_mgr",
+      "replaces_explicit_object": null,
+      "new_object": "native_playerbot_mgr.obj"
     }
   ],
-  "new_explicit_count": 95,
+  "new_explicit_count": 96,
   "native_link_allowed": false,
   "unresolved": [
-    "SpellEffects.cpp actual local game.lib provenance/currentness",
-    "actual MSVC compile of all15 TUs",
-    "native header dependency closure/local include resolution",
+    "actual16thnative_playerbot_mgr compilation with existing CharacterLoginPending tracker",
+    "current native Holder baseline/library-member provenance and preserved ABI",
+    "actual native LINK/MAP implementation provider identity",
     "native runtime proof"
   ],
   "never_deploy_from_branch_base": true

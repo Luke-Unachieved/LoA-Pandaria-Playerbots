@@ -1,60 +1,40 @@
-# Composed V18 native source increment
+# V18 native increment: current state
 
-This is a source-only increment: nine native translation units are changed and six helper/controller units are added. Native Windows compilation, worldserver linking, deployment and gameplay have not been verified. No learned policy controls actions.
+The parent completed the original **15/15 actual MSVC units** and the pure native link-response test. Actual extraction of the current game.lib SpellEffects member plus its CodeView SHA256 matched the current source. No native LINK, deployment, background collection or learning episode is claimed yet.
 
-## Existing code retained
+The remaining integration gap is genuine: the actual modules.lib does not define PlayerbotHolder::IsRaidOwnedBot or IsManagedLogin, while the scheduler has compiled against their new declarations. Header-only compatibility cannot solve this. The native plan now adds one complete real implementation as a **16th unit**, preserving every previous job/source/include order and successful object.
 
-The patch composes the current V14 Engine/PlayerbotAI, V15 authority/cast receipts and V11 **coordinated** DualInterrupt source. It preserves the existing sharedWindows reservations, final checks and return values. Do not compile the obsolete original Nazgrim TU over `dual_pending.obj`. The V15 88 explicit link input hashes were verified by the parent; `link-overlay.json` records eight replacements and seven additions, retaining all other local fixes.
-
-The V18 observer header/TU in `new/` has explicit dungeon scope fields and replaces V17 consistently for every compilation. Do not link both observer versions. Quote includes must resolve `new/EngineShadowObserverV17.h`.
-
-## Prepare sparse native source text
-
-Use existing Python and git (including GitHub Desktop embedded git if necessary). The script does not install anything or use Library transfer. `inputs.json` checks the exact original raw bytes, makes only a sparse LF-normalized source staging copy, applies the standard textual patch, checks every final hash and rechecks originals. No full source/database/server copies or overwrites are made.
-
-With `$here` pointing to this directory and `$python` to the already-present Python executable:
+## Compile just the genuine Holder implementation
 
 ```powershell
-& $python "$here\Prepare-Sources.py" --output "$here\prepared"
-& $python "$here\Prepare-Sources.py" --output "$here\prepared" --apply
+$repo = 'E:\WRL-1112v1\RuntimeCheck-v1\LearningShadow-v18'
+$nativeCandidate = Join-Path $repo 'extras\learning-native-v18\native_candidate'
+& "$nativeCandidate\windows-incremental-v18\Build-Incremental.ps1" `
+  -PlanPath "$nativeCandidate\integrated-v18\v18-compile-plan.json" `
+  -SourceRoot "$nativeCandidate\integrated-v18" `
+  -OutputRoot "$repo\build-v18" -Compile -OnlyJob native_playerbot_mgr
 ```
 
-Both commands first validate all source/dependency hashes. The first is read-only. If git is not on PATH, add `--git 'PATH-TO-EXISTING-GIT.EXE'`; inspect installed tools before installing. Optional `--source-map` supplies explicit local paths for known sources but does not relax any hash check.
+The supplied PlayerbotMgr.cpp SHA256 is263feddd092098d84dfdfae429cbde4bf94f1c5731f51fb510363a806c1d3460. The staged native-api/PlayerbotMgr.cpp SHA256 is6a8379b0d58f0c25dd3683fb1a8dc0bd357b61c50cb71b1b4a9dd8a6fa853494. The only staging additions are a Creature forward declaration and explanatory comment before the first include; its source-local PlayerbotMgr.h resolves the already bound166-line header49050bb78713278eee9b0f2513b3b2ba7cf7c37c4852b1ed3835faf35aa79a5a. All actual registry, lease, callback, session receipt and logout code is retained. These are not detached query stubs.
 
-`SpellEffects.cpp` in the uploaded input is only a base comparison file. Its link-member/current-source identity remains unproven: do not link/deploy this increment until the parent verifies its current local provenance or rebases the minimal interrupt hunk onto the actual current file. A matching old uploaded file alone does not establish currentness.
+The new job reuses the existing PlayerbotAI ABI/flags response as an explicit flag template; that template is not claimed as PlayerbotMgr baseline provenance. The real CharacterLoginPending.h/core tracker must already exist and resolve from the actual native tree. It was not in the2864-file source handoff. Find and bind the real file if the existing flags do not locate it. Never create a look-alike tracker or bypass the native login-pending check.
 
-## Incremental compilation
+The compiled full Holder replaces the current library's entire Holder translation unit, so linking requires current-source/member preservation review. See ../holder-native-v18 for baseline delta and layout evidence and ../windows-link-v18/ACCEPTANCE.md for the native provider contract. An active PlayerbotMgr.cpp differing from the reviewed baseline must be rebased; do not overwrite unknown local fixes.
 
-Use the sibling `windows-incremental-v18/Build-Incremental.ps1` with `v18-compile-plan.json`, `-SourceRoot $here`, a dedicated E-drive `-OutputRoot`, and then `-Compile`. It preserves exact existing compiler flags (including both linewise module and single-line core response formats). Fifteen TU entries are explicit; original rsp/source/object files are not modified. This script only compiles; link mapping is separate and remains blocked until actual compiler and source provenance receipts are available.
+## Source and link composition
 
-## What is connected in source
+The existing nine prepared native files are unchanged. Do not append a tenth source to the sparse patch or rerun its mixed-state apply over already prepared files. The new implementation is already reviewable source under native-api; no new source/database clone is needed.
 
-- Actual native AI callback installs a concrete scope provider, lifecycle identity registry, bounded diagnostic drain and async writer. Dungeon raw scope explicitly keeps unknown encounter epoch at zero. Output is always marked incomplete, not a reward episode.
-- Real coordinated interrupt call binds the actual response immediately before prepare; native cancel/effect proof has a consumer and lifecycle retirement. It supports the existing narrow normal10 whitelist, not every class/boss/difficulty.
-- Existing post-map Playerbots dispatcher performs optional native Group/LFG admission of a full1/1/3 five-man roster; default off. Transient loading retains roster tracking rather than orphaning it. Native proposal/role/entry logic is reused.
+The unchanged nine-file patch composes current V14 Engine/PlayerbotAI, V15 authority/cast receipts and V11 coordinated DualInterrupt. It retains sharedWindows reservations and final returns. The obsolete Nazgrim TU must not replace dual_pending. The updated link overlay is eight replacements plus eight additions:96 explicit/102 total objects, retaining the original37 library arguments and all inherited F509 fixes. It must select the new Holder object for old and new methods; duplicate-symbol suppression is forbidden.
 
-Still missing: repeat finished-dungeon exit/requeue, autonomous10/25 raid entry, full episode features/reward/learner/shared-experience/model promotion and resource measurements. The three-team40-actor budget is planned, not a demonstrated runtime. The additional normally-progressing autonomous world player requested later is being developed separately as V19, without blocking this source increment.
+## Connected and missing scope
 
-## Reuse
+The source connects the AI scope provider, lifecycle registry, bounded async diagnostics, response binding and optional native five-person Group/LFG attempt. Generic dungeon epoch remains explicitly unknown0. No learned policy controls actions.
 
-LoA native Engine, existing class/action execution, Group/LFG, V14 raid constraints, V15 cast identities/reservation book and V16 attempt book are retained. External research repositories are pinned in the lab reuse map; framework research is not falsely described as copied/installed production code. No native test-double header or test executable is part of this source increment.
+Real managed Holder APIs are supplied here; dedicated recruitment/bootstrap callers are a separate source layer and are not claimed newly registered by this16th unit. With no managed callers enabled their registries are genuinely empty. Do not treat query existence as proof that dedicated raid actors were created. Existing ambient five-person admission remains distinct.
 
-## First real Windows compile and include-closure correction
+Still missing: actual16th compile and full LINK, controlled raw capture, repeated completed-instance reset/requeue, autonomous10/25 raid entry, complete episode/reward/shared learner/promotion, and native resource measurements. The separately saved V19 normal world player is not mixed into this compile.
 
-Parent verified the first Engine object compiled in20.99seconds, SHA256 `ff8988a2fe1890ac53358bfa9430de21ccf9df23ae5ac47b2173557083b705ac`. The second PlayerbotAI compilation then failed at InterruptObserver.h:3 because its original V14 response did not include the V15 cast-receipt directory. This is a real compiler result, not a fixture.
+## Existing source preparation
 
-The compile plan now explicitly adds the original V15 cast-receipts/action-runtime and V11 pending-attempt native directories for all15jobs and checks eight exact native header hashes. No duplicated CastReceipt header copies are introduced: the authority's explicit relative imports and all new bare imports must resolve to the same original native files. This also preserves the source-local V11 WarshamanWindow/PendingAttempt pair when the coordinated interrupt TU is staged elsewhere; it must not silently resolve the older V7 window header. New observer/dependency headers remain first. Existing source/patch/final hashes and all formal binaries are unchanged by this build-only correction. Later TU/compiler results remain unverified.
-
-## Resume only the final scheduler unit after14native successes
-
-The parent reports14/15actual MSVC units passed. The final scheduler hit a missing Creature declaration in a legacy condition include chain and used an older PlayerbotMgr.h without the two native ownership APIs. The corrected scheduler declares the actual Creature type and explicitly includes the verified **one-file** native-api/PlayerbotMgr.h before the old include chain. It retains IsRaidOwnedBot and IsManagedLogin checks, and does not replace the full Manager include directory.
-
-The compiler entry now supports selective resume:
-
-```powershell
-& "$nativeCandidate\windows-incremental-v18\Build-Incremental.ps1" -PlanPath "$nativeCandidate\integrated-v18\v18-compile-plan.json" -SourceRoot "$nativeCandidate\integrated-v18" -OutputRoot 'E:\WRL-1112v1\RuntimeCheck-v1\LearningShadow-v18\build-v18' -Compile -OnlyJob NativeBackgroundTraining
-```
-
-It retains the other14successful native results only after checking their source SHA, actual object SHA and exact compiler-response SHA against the existing receipt/files. Their objects and responses are not rewritten or recompiled. The selected result is merged back into compile-results.json; all15successful entries remain required for linking.
-
-Binding header49050...is supplied with matching source263fed...but those facts do not prove the actual linked modules.lib has the matching implementations. Before linking, inspect the exact active modules.lib with dumpbin /linkermember:2 for IsRaidOwnedBot and IsManagedLogin definitions, and compare the active old PlayerbotHolder layout/type aliases/base/virtuals with the bound header. No copied stub implementations or removed guards are acceptable. The current native-api/binding-status.json explicitly leaves these native proofs pending. The single-object compile can proceed while this read-only audit is performed.
+For a new workspace only, Prepare-Sources.py validates the original nine raw sources, applies their exact sparse git patch and verifies prepared hashes. Existing prepared source and input objects remain untouched. The script installs nothing. No test-double header or fixture executable belongs in the native increment. Current Windows continuation should use the selective command above instead of regenerating or recompiling the15 successful units.

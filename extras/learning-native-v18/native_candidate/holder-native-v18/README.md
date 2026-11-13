@@ -1,0 +1,15 @@
+# Genuine holder delta for the V18 five-man checkpoint
+
+This bounded source patch compares actual repository baseline efe7f29107e15a98e0bc4b3ebf61f54696e0827f with the already supplied native V15 PlayerbotMgr.h/.cpp. It introduces no substitute policy bodies, detached registry, or removed scheduler checks.
+
+The parent-reported active 135-line header matches the repository baseline exactly when CRLF is retained. The active CPP remains unconfirmed: repository CPP is 1,561 lines with CRLF SHA-256 f1645eb69e2f2f8746be2c1385c1967ac6ade4981a04b8d17d928f336c406b6a; supplied managed CPP is 1,801 lines with raw SHA-256 263feddd092098d84dfdfae429cbde4bf94f1c5731f51fb510363a806c1d3460. Do not overwrite a different active CPP. Apply/rebase only this recorded delta after reading actual differences and preserving live fixes.
+
+The patch adds the genuine raid-owned set, global per-GUID query leases, cancellation checks, managed admission/completion, exact DB-row gate, native session receipts, and receipt-scoped cleanup. IsRaidOwnedBot reads validated registrations. IsManagedLogin reads actual pending managed query leases. The query holder retains its lease and actual core pending-login tracker until completion/destruction.
+
+The native compile gate requires existing local CharacterLoginPending.h and its authoritative core hooks. The package contains no such header. Baseline src/server/game/Handlers/CharacterHandler.cpp contains LOAD_FROM/LOAD_SERVICES query contracts but no CharacterLoginPending reference, so the candidate relies on later local native core work whose actual identity must be checked. Required calls are race_native::CharacterLoginPending::Acquire(lowGuid) and IsCharacterLoginPending(lowGuid). Do not recreate an isolated tracker or delete either use.
+
+After actual CPP identity and tracker availability are confirmed, compile this complete genuine CPP as a new isolated candidate object with native holder response settings. Preserve its UTF-8 BOM and Windows CRLF. Reuse the existing 15 V18 successful objects and all 88 V15 explicit objects. Link only after actual source/header/object/response hashes are recorded; check MAP ownership of new queries and all existing formal/input locks. No native compile, link, or server run occurred here.
+
+The current V18 module hooks do not call AddSC_mop_raid_recruitment. This patch does not claim dedicated roster/bootstrap startup is connected. Without dedicated registrations or managed admissions, the genuine registries are naturally empty. The existing five-man scheduler uses ambient native random bots and checks both queries. Future dedicated enablement needs the real recruitment TU, startup/update/shutdown registration, exact DB/account provenance gates, and real random-manager/factory provisioning exclusions. That enablement is outside this bounded five-man checkpoint.
+
+Files: holder-native-v18.patch (LF unified patch from native repository root), input-manifest.json (raw hashes and build/link gates), ABI_LAYOUT.md (source ABI and preserved fixes). Existing integrated files and live state remain untouched.

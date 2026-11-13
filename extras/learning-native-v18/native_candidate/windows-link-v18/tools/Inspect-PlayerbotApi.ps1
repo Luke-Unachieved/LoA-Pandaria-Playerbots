@@ -68,7 +68,9 @@ $symbolPattern='(?<!\S)(\?(?:IsRaidOwnedBot|IsManagedLogin|IsRaidProvisioningAcc
 $nativePreference=$ErrorActionPreference;$dumpbinExit=-1
 try {
   $ErrorActionPreference='Continue'
-  $LASTEXITCODE=-1
+  # Native commands update global LASTEXITCODE. An unqualified initializer here
+  # would create a script-scope shadow that masks the real native exit code.
+  $global:LASTEXITCODE=-1
   & $dumpbin /nologo /linkermember:2 $ModulesLibrary 2>&1 | ForEach-Object {
     $line=[string]$_
     if ($line -match $symbolPattern) {
@@ -77,7 +79,7 @@ try {
       $diagnostics.Add($line)
     }
   }
-  $dumpbinExit=$LASTEXITCODE
+  $dumpbinExit=$global:LASTEXITCODE
 } catch {
   if ($diagnostics.Count -lt 12) { $diagnostics.Add($_.Exception.Message) }
 } finally { $ErrorActionPreference=$nativePreference }

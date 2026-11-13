@@ -1,47 +1,42 @@
-# Native V18: current local continuation
+# Native V18: next local action
 
-## Actual checkpoint
+## Confirmed actual evidence
 
-- Repository: Luke-Unachieved/LoA-Pandaria-Playerbots; branch: `dev/learning-shadow-v18`.
-- Latest compiler correction: `2c6762312c0eebf0de0c87a51f804f1ee70d58fa` (descends from `512fd1c`).
-- Parent Windows evidence: **14/15 native translation units passed**. Only `NativeBackgroundTraining` failed. All-15 success, native LINK, runtime collection, training episodes and model control are still unverified.
-- Formal server remains the parent-reported F509 EXE. No source in this child starts a server automatically. Coordinate the existing localization/DB owner before the later authorized background run.
+Parent reports original15/15 MSVC units passed; native response transform test passed95 explicit/101 total objects with37 original library tokens. The current game.lib SpellEffects member was actually extracted and its CodeView source SHA256 matched the current source. Keep that evidence; do not repeat it merely to accumulate checks.
 
-## 1. Resume only the failed native unit
+Actual modules.lib does not export IsRaidOwnedBot or IsManagedLogin. The active135-line PlayerbotMgr.h is the older API; the bound166-line header has the new managed layer. No final LINK, deployment, runtime or learning success has happened. F509 remains unchanged.
 
-Fetch the branch's current reviewed text sources. Preserve raw bytes using the supplied `.gitattributes`. Do not rebuild the branch baseline or overwrite local F509 patches.
+## New minimal increment
+
+This source delivery adds the complete genuine provided PlayerbotMgr.cpp as one16th TU. It uses the same bound header, with only a Creature forward declaration/comment inserted before the original first include. Source SHA2566a8379b0d58f0c25dd3683fb1a8dc0bd357b61c50cb71b1b4a9dd8a6fa853494; original SHA263feddd092098d84dfdfae429cbde4bf94f1c5731f51fb510363a806c1d3460. Registry, lease, real callback, session and logout implementation remains intact. No safety guard was removed.
 
 ```powershell
 $repo = 'E:\WRL-1112v1\RuntimeCheck-v1\LearningShadow-v18'
-$nativeCandidate = Join-Path $repo 'extras\learning-native-v18\native_candidate'
-& "$nativeCandidate\windows-incremental-v18\Build-Incremental.ps1" `
-  -PlanPath "$nativeCandidate\integrated-v18\v18-compile-plan.json" `
-  -SourceRoot "$nativeCandidate\integrated-v18" `
-  -OutputRoot "$repo\build-v18" -Compile -OnlyJob NativeBackgroundTraining
+$n = Join-Path $repo 'extras\learning-native-v18\native_candidate'
+& "$n\windows-incremental-v18\Build-Incremental.ps1" `
+  -PlanPath "$n\integrated-v18\v18-compile-plan.json" `
+  -SourceRoot "$n\integrated-v18" -OutputRoot "$repo\build-v18" `
+  -Compile -OnlyJob native_playerbot_mgr
 ```
 
-The new script verifies and reuses each of the other 14 actual successful objects, source hashes and exact response contents. It writes a merged 15-job receipt with response hashes. The last source now declares `class Creature;` before its first include and explicitly binds `../native-api/PlayerbotMgr.h`. Both `IsRaidOwnedBot` and `IsManagedLogin` checks remain. No ownership check was removed.
+All15 existing job records are unchanged, so the compiler entry checks and reuses their actual source/object/response triples. It compiles only the new source using the existing PlayerbotAI flag template. Do not run the whole branch as a clean replacement or rerun the nine-source preparation over already prepared files.
 
-Binding header SHA256: `49050bb78713278eee9b0f2513b3b2ba7cf7c37c4852b1ed3835faf35aa79a5a`. Final scheduler source SHA256: `39e90fe72ccf032374c70e1db681b6ada46b0d09d23566e1297d8abd0f164dba`.
+## Actual source closure that must be checked
 
-## 2. Verify the actual native implementation, then LINK
+1. Hash/read current active PlayerbotMgr.cpp and compare with the reviewed baseline. The known Git baseline fromefe7f291 has CRLF SHA f1645eb69e2f2f8746be2c1385c1967ac6ade4981a04b8d17d928f336c406b6a. Header CRLF SHA0b10575107d124367fcf51f523ad8f903392968d8b8b2e1f9de2b9fc147f8ac0. An actual CPP mismatch requires a review/rebase, not blind replacement. The provided candidate is a real pending managed implementation, not proof that it was ever built into F509.
+2. Locate the **actual CharacterLoginPending.h and its native core hooks**, referenced by the supplied CPP but absent from the cloud handoff. Existing Windows core sources may already contain them. Use their real include path/implementation; do not synthesize an isolated substitute. If absent, return the genuine source closure for integration. Missing headers or native tracker symbols remain real blockers.
+3. Before linking, bind the actual current modules.lib member to its active baseline source and review the minimal delta. Source layout comparison keeps PlayerbotHolder base/type aliases/fields/virtuals unchanged. Actual local matching still needs evidence. Updated windows-link-v18/ACCEPTANCE.md accepts the explicit Holder object as provider, since confirmed absent exports cannot pass the old modules-only contract.
 
-The last correction fixes header selection; it does not prove the actual `modules.lib` exports the required matching implementation. Use `windows-link-v18/tools/Inspect-PlayerbotApi.ps1` with the actual active header path (override its default if needed). Read the symbol report and compare class layout/type aliases/bases/virtuals/fields. If APIs are absent, resolve the genuine implementation rather than adding stubs or deleting checks.
+Inspect-PlayerbotApi.ps1 now uses explicit global:LASTEXITCODE initialization/capture. PowerShell native commands update that global value; the old script-local initializer masked it. A successful dumpbin with no selected symbols now remains exit0 and empty symbols. No new process wrapper or full archive-index dump was added. Remove only the old erroneous inspection report before rerunning the same fixed output path; it refuses to overwrite an existing report.
 
-For SpellEffects, extract the exact current `game.lib` member and compare it with the standalone object. `windows-link-v18/tools/Read-CodeViewSource.py` can bind that member's actual compiler checksum to the current baseline source. The candidate is exactly three additive lines; removing them must reproduce the baseline. Paths, timestamps and ninja_log alone are insufficient. A full 149-method scan is not required unless a real symbol conflict needs diagnosis.
+## Link and bounded background capture
 
-Read `windows-link-v18/README.md` and `ACCEPTANCE.md`. The new native LINK entry preserves the original V15 libraries and inherited objects, replaces eight objects and adds seven. Run the focused PowerShell transform/parser checks on Windows, collect the actual two acceptance reports, validate once, then pass `-Link`. Candidate outputs stay in `$repo\link-v18`; the formal directory is never an output target. No `/FORCE` bypass is added. The receipt distinguishes actual LINK success from accepted inputs/MAP providers. There is no Windows PowerShell runtime in the cloud; these scripts need their first native execution by the parent.
+Read windows-link-v18/README.md and ACCEPTANCE.md. Composition is now16 jobs,8 original replacements+8 additions,96 explicit/102 total objects; all37 original libraries remain. The new actual MAP must select native_playerbot_mgr.obj for the required queries and selected existing Holder methods, while SpellEffects keeps its already reviewed source and provider check. No /FORCE bypass is permitted.
 
-## 3. Bounded background capture after coordination
+The parent runs the limited native parser/transform check for changed link entry, then validates and links into a dedicated candidate directory. The child has no Windows executor; native compilation/link status must come from actual local receipts.
 
-Read `capture-v18/README.md`. It contains small configuration preparation and quiet candidate launch entries using the existing Python 3.11 executable. No new DB, game copy or desktop client is required. Actual copied configuration files may contain secrets: keep them local, never upload them.
+Read capture-v18/README.md for optional no-window bounded capture using the existing Python. Reuse the existing DB, no full server/data/DB copies. Keep copied configurations local because they can contain secrets. Coordinate localization/DB use before the already authorized --start --localization-clear operation. First-five tries actual native LFG464/map960,1tank/1healer/3DPS; waiting or raw rows do not mean a finished dungeon.
 
-Profiles are `boot`, `observe` and `first-five`. The latter attempts native Group/LFG admission of five existing eligible actors (1 tank, 1 healer, 3 DPS) to normal 青龙寺, client LFG 464/map960. Runtime native eligibility remains authoritative. A default 120-second bounded process window is a collection check, not a promise of a complete dungeon. MySQL must already be available; the wrapper does not start DB/auth services. Parent must confirm localization/DB coordination before `--start --localization-clear`.
+## Remaining gameplay scope
 
-## Remaining scope
-
-- This V18 establishes observer/provider/response binding and a first five-person native admission path. Native 10/25 autonomous raid entry, completed-instance repeat/reset, complete episode extraction, shared learning/promotion and actual resource/quality measurements are not finished.
-- The user target remains 5/10/25 teams (40 AI), shared experience, no human prerequisite, quiet normal dungeons and optional raid/challenge guidance.
-- V19 autonomous world player is a separate source checkpoint from `512fd1c`; do not mix it into the current 15-unit V18 compile. It requires rebasing its older scheduler baseline after this V18 fix. No V19 Windows mapping/compile/runtime success is claimed.
-- Preserve parent F509 Player.cpp and all Worgen, guild, hearthstone, dungeon and localization fixes. Existing V11 coordinated DualInterrupt is the source being patched, not the obsolete Nazgrim version.
-- Model remains shadow-only. Raw diagnostic rows, successful admission or a successful Boolean do not prove an action succeeded or a native training episode completed.
+Dedicated recruitment registration/bootstrap is not enabled just by supplying the Holder TU. Autonomous10/25 entry, repeat/reset, complete learning episodes, shared model training/promotion and resource evidence remain unfinished. User plan remains5/10/25 teams40AI, no human prerequisite, quiet ordinary dungeons, optional raid/challenge guidance. V19 normal autonomous world player remains separate and requires later rebase; F509 Worgen/guild/hearthstone/dungeon/Player.cpp and localization patches remain protected.

@@ -1,10 +1,10 @@
 # Pure transformation: preserve the original token stream except eight exact
-# quoted object replacements, seven prepended objects and three output switches.
+# quoted object replacements, eight prepended objects and three output switches.
 function Get-LinkTokens([string]$Text) {
   return @([regex]::Matches($Text, '(?:[^\s"]+|"[^"\r\n]*")+') | ForEach-Object { $_.Value })
 }
 function Convert-LinkResponse([string]$Text, $Overlay, [string]$CompileRoot, [string]$CandidateRoot) {
-  if ($Overlay.schema -ne 'native-v18-link-overlay-v1' -or @($Overlay.object_overlays).Count -ne 15) { throw 'Unexpected overlay schema/job count.' }
+  if ($Overlay.schema -ne 'native-v18-link-overlay-v1' -or @($Overlay.object_overlays).Count -ne 16) { throw 'Unexpected overlay schema/job count.' }
   $tokens=Get-LinkTokens $Text
   if (@($tokens | Where-Object { $_ -match '^@|^[-/](PDB|ILK|MANIFESTFILE|LTCGOUT|PGD|DEF|ORDER|WHOLEARCHIVE|LIBPATH):' }).Count) { throw 'Unexpected nested input, search path or side output in base response.' }
   if (@($tokens | Where-Object { $_ -match '^[-/]FORCE(?::|$)' }).Count) { throw 'Duplicate/unresolved-symbol override flags are forbidden.' }
@@ -22,7 +22,7 @@ function Convert-LinkResponse([string]$Text, $Overlay, [string]$CompileRoot, [st
     } else { $added += $new }
     $changes += [pscustomobject]@{job=$entry.job;old=$entry.replaces_explicit_object;new=$new.Trim('"')}
   }
-  if ($replaced -ne 8 -or $added.Count -ne 7) { throw 'Expected eight replacements and seven additions.' }
+  if ($replaced -ne 8 -or $added.Count -ne 8) { throw 'Expected eight replacements and eight additions.' }
   foreach ($option in @('OUT','MAP','IMPLIB')) {
     $matches=@(0..($tokens.Count-1) | Where-Object { $tokens[$_] -match ('^[-/]'+$option+':') })
     if ($matches.Count -ne 1) { throw "Expected one /$option token." }
@@ -34,6 +34,6 @@ function Convert-LinkResponse([string]$Text, $Overlay, [string]$CompileRoot, [st
   $objects=@($tokens | Where-Object { $_.Trim('"') -match '(?i)\.obj$' })
   if (@($objects | Group-Object { $_.Trim('"').ToLowerInvariant() } | Where-Object Count -ne 1).Count) { throw 'Duplicate object tokens.' }
   $explicit=@($objects | Where-Object { $_ -match '^"[A-Za-z]:[\\/]' })
-  if ($Overlay.preserve_explicit_input_count -ne 88 -or $Overlay.new_explicit_count -ne 95 -or $explicit.Count -ne 95 -or $objects.Count -ne 101) { throw 'Expected 95 explicit and six relative core objects.' }
+  if ($Overlay.preserve_explicit_input_count -ne 88 -or $Overlay.new_explicit_count -ne 96 -or $explicit.Count -ne 96 -or $objects.Count -ne 102) { throw 'Expected 96 explicit and six relative core objects.' }
   return [pscustomobject]@{text=(($tokens -join "`r`n")+"`r`n");tokens=$tokens;changes=$changes;explicit_objects=$explicit.Count;total_objects=$objects.Count}
 }

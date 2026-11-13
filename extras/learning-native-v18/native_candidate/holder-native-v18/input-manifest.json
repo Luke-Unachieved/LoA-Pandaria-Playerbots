@@ -1,0 +1,143 @@
+{
+  "schema": "holder-native-v18-bounded-source-delta-v1",
+  "status": "read-only comparison complete; native compile/link unverified",
+  "baseline_repository": "Luke-Unachieved/LoA-Pandaria-Playerbots",
+  "confirmed_active_header_sha256": "0b10575107d124367fcf51f523ad8f903392968d8b8b2e1f9de2b9fc147f8ac0",
+  "baseline_header_matches_parent_report": true,
+  "actual_active_cpp_identity_verified": false,
+  "actual_active_cpp_required_to_match_or_rebase": "f1645eb69e2f2f8746be2c1385c1967ac6ade4981a04b8d17d928f336c406b6a",
+  "files": [
+    {
+      "path": "modules/mod_playerbots/src/Manager/PlayerbotMgr.h",
+      "baseline_commit": "efe7f29107e15a98e0bc4b3ebf61f54696e0827f",
+      "baseline_blob_sha": "e9f5502e7561bee4a9a79d669f11dec70387f814",
+      "baseline_url": "https://github.com/Luke-Unachieved/LoA-Pandaria-Playerbots/blob/efe7f29107e15a98e0bc4b3ebf61f54696e0827f/modules/mod_playerbots/src/Manager/PlayerbotMgr.h",
+      "baseline_lf_sha256": "56e6348b46aee114564119c02dac654373aa582b84a7bb2c58167bd753aef533",
+      "baseline_crlf_sha256": "0b10575107d124367fcf51f523ad8f903392968d8b8b2e1f9de2b9fc147f8ac0",
+      "baseline_lines": 135,
+      "supplied_raw_sha256": "49050bb78713278eee9b0f2513b3b2ba7cf7c37c4852b1ed3835faf35aa79a5a",
+      "supplied_normalized_lf_sha256": "8ef23c06719a1123e53878dc3c48dbe2be73f42c5afc013be85d54610a740c1e",
+      "supplied_lines": 166,
+      "supplied_origin": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/Manager/PlayerbotMgr.h",
+      "diff_added_lines": 31,
+      "diff_removed_lines": 0
+    },
+    {
+      "path": "modules/mod_playerbots/src/Manager/PlayerbotMgr.cpp",
+      "baseline_commit": "efe7f29107e15a98e0bc4b3ebf61f54696e0827f",
+      "baseline_blob_sha": "03b233227c14e8f58e7c8616ebfa0a3725afc2f5",
+      "baseline_url": "https://github.com/Luke-Unachieved/LoA-Pandaria-Playerbots/blob/efe7f29107e15a98e0bc4b3ebf61f54696e0827f/modules/mod_playerbots/src/Manager/PlayerbotMgr.cpp",
+      "baseline_lf_sha256": "9317635e59dedada5c0b6c0844d3cb5cc138e95f738bd5ff396279596c2d94b2",
+      "baseline_crlf_sha256": "f1645eb69e2f2f8746be2c1385c1967ac6ade4981a04b8d17d928f336c406b6a",
+      "baseline_lines": 1561,
+      "supplied_raw_sha256": "263feddd092098d84dfdfae429cbde4bf94f1c5731f51fb510363a806c1d3460",
+      "supplied_normalized_lf_sha256": "65423dc347b20924debb6fb0e471ad3dccc229ae3ef17e268da8b67bf3586900",
+      "supplied_lines": 1801,
+      "supplied_origin": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted/D/WOW/RaidAI-Dev/BuildSources/prod0d107-raid-utf8-5c4d3725e00b/modules/mod_playerbots/src/Manager/PlayerbotMgr.cpp",
+      "diff_added_lines": 263,
+      "diff_removed_lines": 23
+    }
+  ],
+  "patch": {
+    "path": "holder-native-v18.patch",
+    "sha256": "8abc8b53959b53ea50c437449b4dc5929b632690f45dd9a37220a05e51aeb867",
+    "encoding": "utf-8",
+    "line_endings": "LF",
+    "source_output_line_endings": "preserve actual Windows CRLF and CPP UTF-8 BOM"
+  },
+  "abi": {
+    "base": "PlayerbotAIBase",
+    "PlayerBotMap": "std::map<uint64, Player*>",
+    "protected_fields_same_order": [
+      "PlayerBotMap playerBots",
+      "std::unordered_set<ObjectGuid> botLoading",
+      "mutable std::shared_mutex playerBotsMutex"
+    ],
+    "added_instance_fields": [],
+    "changed_instance_fields": [],
+    "added_virtual_functions": [],
+    "changed_existing_virtual_signatures": [],
+    "new_public_nonvirtual_methods": [
+      "AddManagedPlayerBot",
+      "IsManagedLogin [static]",
+      "HasManagedLogins [static]",
+      "LogoutUnjoinedManagedBot",
+      "HasManagedSession",
+      "RegisterRaidOwnedBot [static]",
+      "IsRaidOwnedBot [static]",
+      "IsRaidProvisioningAccount [static]"
+    ],
+    "new_private_nonvirtual_methods": [
+      "FinishManagedBot",
+      "QueuePlayerBot"
+    ],
+    "conclusion": "source-declared layout/vtable preserved against exact efe7 header; target compiler binary layout proof pending"
+  },
+  "native_dependencies": [
+    {
+      "name": "actual active PlayerbotMgr.cpp and compile response",
+      "state": "parent actual bytes/hash required",
+      "reason": "rebase any local fixes before replacing its native object"
+    },
+    {
+      "name": "CharacterLoginPending.h",
+      "state": "not in supplied 2864-file package; actual local availability/provenance required",
+      "calls": [
+        "race_native::CharacterLoginPending::Acquire(guid.GetCounter())",
+        "race_native::CharacterLoginPending::IsCharacterLoginPending(guid.GetCounter())"
+      ],
+      "constraint": "reuse actual core tracker and human login hooks; no replacement registry or removed check"
+    },
+    {
+      "name": "actual CharacterHandler login query contract",
+      "state": "exact active implementation identity pending",
+      "reason": "managed gate accesses LOAD_FROM fields 0 GUID, 1 account, 34 at_login and rejects LOAD_SERVICES before core login"
+    },
+    {
+      "name": "Config.h, limits, existing C++17 STL",
+      "state": "normal native dependencies; compile response must retain native settings"
+    }
+  ],
+  "compile_gate": [
+    "Confirm actual native CPP raw hash equals f1645eb69e2f2f8746be2c1385c1967ac6ade4981a04b8d17d928f336c406b6a or rebase this bounded delta onto actual current bytes.",
+    "Confirm actual CharacterLoginPending header/API and authoritative core login hooks; preserve implementation.",
+    "Compile complete genuine holder source using actual native response settings into a new isolated candidate object; retain all existing 15 V18 and 88 V15 objects.",
+    "Bind source/header/object/response hashes in the native receipt. No native success is implied by source comparison."
+  ],
+  "link_gate": [
+    "Add only isolated genuine holder replacement provider while preserving current objects/libraries.",
+    "Confirm link MAP provider for both queried methods is new holder object, with no accidental old holder member extraction or duplicate-provider workaround.",
+    "Retain exact input/formal EXE locks. No FORCE:MULTIPLE, stubs, or removed ownership checks."
+  ],
+  "dedicated_recruitment_scope": {
+    "enabled_by_this_patch": false,
+    "current_v18_caller": "AdmitFiveOperation checks both queries against actual existing state.",
+    "registry_semantics": "raidOwnedBots records validated dedicated registrations; botLoginLeases records actual asynchronous managed tokens. Empty registries without managed actors are natural state, never hard-coded query answers.",
+    "future_dedicated_enablement": [
+      "explicitly link/reuse actual MopRaidRecruitment.cpp",
+      "call AddSC_mop_raid_recruitment once alongside preserved V18 registrations",
+      "retain roster/bootstrap startup, shutdown, serialized world update, exact DB/account provenance gates",
+      "retain actual RandomPlayerbotMgr and RandomPlayerbotFactory provisioning exclusions",
+      "coordinate authoritative core normalization/reset hooks before dedicated enablement"
+    ],
+    "not_claimed": [
+      "10/25-player operational admission",
+      "dedicated registry population in current V18 module",
+      "native compile/link/run",
+      "live F509 source compatibility without actual current CPP identity"
+    ]
+  },
+  "protected_scope": {
+    "integrated_plan_edited": false,
+    "existing_sources_edited": false,
+    "formal_exe_modified": false,
+    "server_started": false,
+    "database_modified": false
+  },
+  "validation": {
+    "patch_roundtrip_verified": true,
+    "method": "Parsed and applied both unified patch sections in memory to the exact GitHub baseline text, checked every removed/context line, restored CRLF and original CPP BOM, and matched both supplied raw SHA256 values.",
+    "native_compilation": false,
+    "native_link": false
+  }
+}

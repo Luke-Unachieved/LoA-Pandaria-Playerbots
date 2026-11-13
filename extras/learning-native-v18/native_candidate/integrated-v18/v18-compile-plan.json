@@ -1,6 +1,6 @@
 {
   "schema": "native-shadow-incremental-compile-v1",
-  "scope": "Composed default-off V18 raw collector, response binding, first-five Group/LFG candidate. Not a completed learning system.",
+  "scope": "Composed default-off V18 raw collector plus genuine PlayerbotHolder managed lifecycle. First-five native Group/LFG only; not completed learning or dedicated recruitment.",
   "vcvars": "E:\\WoW548\\BuildTools\\VS2022\\VC\\Auxiliary\\Build\\vcvars64.bat",
   "formal_exe": "E:\\WoW548\\Server\\worldserver.exe",
   "formal_sha256": "f509e005ddf59360f8c3f7eedb4c1396a2b145f6ad4a17c54fe553fb1dbc0223",
@@ -116,6 +116,10 @@
     {
       "path": "native-api/PlayerbotMgr.h",
       "sha256": "49050bb78713278eee9b0f2513b3b2ba7cf7c37c4852b1ed3835faf35aa79a5a"
+    },
+    {
+      "path": "native-api/PlayerbotMgr.cpp",
+      "sha256": "6a8379b0d58f0c25dd3683fb1a8dc0bd357b61c50cb71b1b4a9dd8a6fa853494"
     }
   ],
   "jobs": [
@@ -388,6 +392,28 @@
         "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
         "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
       ]
+    },
+    {
+      "name": "native_playerbot_mgr",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v14\\PlayerbotAI.object.rsp",
+      "base_response_sha256": "d653d0a54f7766349828ea6d45beeeb69e1fedbe162bb3ccf8b988742f7a86e5",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\durumu-duty-v14\\entrypoint-candidates\\PlayerbotAI.cpp",
+      "base_source_sha256": "c7df68f3f0c11f6f002344a56eab9eaea7d91e73727a9ad04d20b75daf79a557",
+      "source": "native-api/PlayerbotMgr.cpp",
+      "source_sha256": "6a8379b0d58f0c25dd3683fb1a8dc0bd357b61c50cb71b1b4a9dd8a6fa853494",
+      "include_dirs": [
+        "native-api",
+        "new",
+        "prepared/native"
+      ],
+      "native_include_dirs": [
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15",
+        "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11"
+      ],
+      "flag_template_job": "playerbot_ai",
+      "implementation_origin_sha256": "263feddd092098d84dfdfae429cbde4bf94f1c5731f51fb510363a806c1d3460",
+      "baseline_currentness": "Active actual PlayerbotMgr.cpp/member must match reviewed baseline before LINK; compile does not prove currentness. CharacterLoginPending native header/core closure must already exist, never synthesize a substitute."
     }
   ],
   "native_compile_verified": false,

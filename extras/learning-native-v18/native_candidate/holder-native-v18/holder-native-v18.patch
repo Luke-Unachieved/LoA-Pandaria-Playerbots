@@ -1,0 +1,465 @@
+--- a/modules/mod_playerbots/src/Manager/PlayerbotMgr.h
++++ b/modules/mod_playerbots/src/Manager/PlayerbotMgr.h
+@@ -12,6 +12,9 @@
+ #include "QueryHolder.h"
+ #include "QueryResult.h"
+ 
++#include <atomic>
++#include <functional>
++#include <memory>
+ #include <shared_mutex>
+ #include <unordered_set>
+ #include <vector>
+@@ -25,6 +28,19 @@
+ typedef std::map<uint64, Player*> PlayerBotMap;
+ typedef std::map<std::string, std::set<std::string> > PlayerBotErrorMap;
+ 
++// World-thread managed admission. valid/complete must not retain Player pointers.
++// Caller owns cancellation; the asynchronous query retains the token through completion.
++enum class ManagedBotLoginResult { Loaded, Cancelled, Refused, Failed };
++struct ManagedBotLogin
++{
++    std::atomic<bool> cancelled{false};
++    uint64 sessionReceipt = 0; // Assigned only after actual managed AI registration, world thread.
++    std::function<bool()> valid;
++    // Optional exact DB-row identity gate, before core login can touch the character.
++    std::function<bool(PreparedQueryResult)> verifyCharacterRow;
++    std::function<void(Player*, ManagedBotLoginResult)> complete;
++};
++
+ class PlayerbotHolder : public PlayerbotAIBase
+ {
+ public:
+@@ -32,6 +48,16 @@
+     virtual ~PlayerbotHolder() {};
+ 
+     void AddPlayerBot(ObjectGuid guid, uint32 masterAccountId);
++    // Returns false for synchronous refusal; no callback in that case. A true return
++    // guarantees one terminal callback when the DB callback is processed.
++    bool AddManagedPlayerBot(ObjectGuid guid, std::shared_ptr<ManagedBotLogin> const& token);
++    static bool IsManagedLogin(ObjectGuid guid);
++    static bool HasManagedLogins();
++    bool LogoutUnjoinedManagedBot(ObjectGuid guid, uint64 sessionReceipt);
++    bool HasManagedSession(ObjectGuid guid, uint64 sessionReceipt) const;
++    static void RegisterRaidOwnedBot(ObjectGuid guid);
++    static bool IsRaidOwnedBot(ObjectGuid guid);
++    static bool IsRaidProvisioningAccount(uint32 accountId);
+     void HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder const& holder);
+ 
+     void LogoutPlayerBot(ObjectGuid guid);
+@@ -66,6 +92,11 @@
+     std::string const LookupBots(Player* master);
+     uint32 GetPlayerbotsCount() { return playerBots.size(); }
+     uint32 GetPlayerbotsCountByClass(uint32 cls);
++
++private:
++    bool FinishManagedBot(Player* bot, bool logoutSession, uint64 receipt = 0, bool requireUnjoined = false);
++    bool QueuePlayerBot(ObjectGuid guid, uint32 masterAccountId,
++        std::shared_ptr<ManagedBotLogin> const& token = {}, uint32 addclassLevel = 0);
+ 
+ protected:
+     virtual void OnBotLoginInternal(Player* const bot) = 0;
+--- a/modules/mod_playerbots/src/Manager/PlayerbotMgr.cpp
++++ b/modules/mod_playerbots/src/Manager/PlayerbotMgr.cpp
+@@ -16,6 +16,9 @@
+ */
+ 
+ #include "PlayerbotMgr.h"
++#include "CharacterLoginPending.h"
++#include "Config.h"
++#include <limits>
+ #include "RBAC.h"
+ 
+ #include <cstdio>
+@@ -52,47 +55,156 @@
+ static std::mutex sAddclassMutex;
+ static std::map<ObjectGuid, uint32> sAddclassPending; // bot guid -> master level at the time of the command
+ 
++namespace
++{
++// One lease per GUID across ALL PlayerbotHolder instances. A query owns its lease
++// until its callback and its SQL holder are destroyed, including after cancellation.
++struct BotLoginLease
++{
++    ObjectGuid guid;
++    std::shared_ptr<ManagedBotLogin> managed;
++};
++std::mutex botLoginLeaseMutex;
++std::unordered_set<ObjectGuid> raidOwnedBots;
++struct ManagedSessionReceipt { uint64 serial; WorldSession* session; };
++std::map<ObjectGuid, ManagedSessionReceipt> managedSessions;
++uint64 nextManagedSessionReceipt = 0; // World-thread only, never reused.
++std::map<ObjectGuid, std::weak_ptr<BotLoginLease>> botLoginLeases;
++std::shared_ptr<BotLoginLease> AcquireBotLoginLease(ObjectGuid guid, std::shared_ptr<ManagedBotLogin> const& managed)
++{
++    std::lock_guard<std::mutex> lock(botLoginLeaseMutex);
++    // Remove completed entries so the registry cannot grow with historical GUIDs.
++    for (auto i = botLoginLeases.begin(); i != botLoginLeases.end();)
++        if (i->second.expired()) i = botLoginLeases.erase(i); else ++i;
++    if (botLoginLeases.count(guid)) return {};
++    auto lease = std::make_shared<BotLoginLease>();
++    lease->guid = guid; lease->managed = managed;
++    botLoginLeases.emplace(guid, lease);
++    return lease;
++}
++bool ManagedValid(std::shared_ptr<ManagedBotLogin> const& token)
++{
++    return token && !token->cancelled.load() && token->valid && token->valid();
++}
++}
++
++void PlayerbotHolder::RegisterRaidOwnedBot(ObjectGuid guid)
++{
++    if (!guid) return;
++    std::lock_guard<std::mutex> lock(botLoginLeaseMutex);
++    raidOwnedBots.insert(guid);
++}
++
++bool PlayerbotHolder::IsRaidOwnedBot(ObjectGuid guid)
++{
++    std::lock_guard<std::mutex> lock(botLoginLeaseMutex);
++    return raidOwnedBots.count(guid) != 0;
++}
++
++bool PlayerbotHolder::IsRaidProvisioningAccount(uint32 accountId)
++{
++    // Startup configuration: changing this allowlist requires a restart. No credentials.
++    static std::set<uint32> const accounts = []
++    {
++        std::set<uint32> result;
++        std::string text = sConfigMgr->GetStringDefault("AiPlayerbot.MopRaidRecruitment.ProvisioningAccounts", "");
++        std::replace(text.begin(), text.end(), ',', ' ');
++        std::istringstream input(text); std::string word;
++        while (input >> word)
++        {
++            if (word.empty() || word.find_first_not_of("0123456789") != std::string::npos) continue;
++            try { unsigned long long value = std::stoull(word); if (value && value <= 0xffffffffULL) result.insert(uint32(value)); }
++            catch (...) { /* Invalid configuration never grants account access. */ }
++        }
++        return result;
++    }();
++    return accounts.count(accountId) != 0;
++}
++
++bool PlayerbotHolder::HasManagedLogins()
++{
++    std::lock_guard<std::mutex> lock(botLoginLeaseMutex);
++    for (auto const& entry : botLoginLeases)
++        if (auto lease = entry.second.lock()) if (lease->managed) return true;
++    return false;
++}
++
++bool PlayerbotHolder::IsManagedLogin(ObjectGuid guid)
++{
++    std::lock_guard<std::mutex> lock(botLoginLeaseMutex);
++    auto i = botLoginLeases.find(guid);
++    auto lease = i == botLoginLeases.end() ? nullptr : i->second.lock();
++    return lease && bool(lease->managed);
++}
++
+ PlayerbotHolder::PlayerbotHolder() : PlayerbotAIBase(false) {}
+ class PlayerbotLoginQueryHolder : public LoginQueryHolder
+ {
+ private:
++    // RAII covers initialization, async DB, ready-but-unprocessed callback, and cancellation.
++    std::shared_ptr<race_native::CharacterLoginPending> pendingRaceLogin;
++    std::shared_ptr<BotLoginLease> lease;
+     uint32 masterAccountId;
+     PlayerbotHolder* playerbotHolder;
+ 
+ public:
+-    PlayerbotLoginQueryHolder(PlayerbotHolder* playerbotHolder, uint32 masterAccount, uint32 accountId, ObjectGuid guid)
++    PlayerbotLoginQueryHolder(PlayerbotHolder* playerbotHolder, uint32 masterAccount, uint32 accountId, ObjectGuid guid, std::shared_ptr<BotLoginLease> lease)
+         : LoginQueryHolder(accountId, guid)
++        , pendingRaceLogin(race_native::CharacterLoginPending::Acquire(guid.GetCounter()))
++        , lease(std::move(lease))
+         , masterAccountId(masterAccount)
+         , playerbotHolder(playerbotHolder)
+     {
+     }
+ 
++    std::shared_ptr<ManagedBotLogin> GetManaged() const { return lease->managed; }
+     uint32 GetMasterAccountId() const { return masterAccountId; }
+     PlayerbotHolder* GetPlayerbotHolder() { return playerbotHolder; }
+ };
+ 
+ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId)
+ {
++    QueuePlayerBot(playerGuid, masterAccountId);
++}
++
++bool PlayerbotHolder::AddManagedPlayerBot(ObjectGuid guid, std::shared_ptr<ManagedBotLogin> const& token)
++{
++    if (!token) return false;
++    return QueuePlayerBot(guid, 0, token);
++}
++
++bool PlayerbotHolder::QueuePlayerBot(ObjectGuid playerGuid, uint32 masterAccountId,
++    std::shared_ptr<ManagedBotLogin> const& token, uint32 addclassLevel)
++{
++    if (token && (!ManagedValid(token) || !token->complete)) return false;
++    // Dedicated admission serializes against this holder's pending ambient batch.
++    // Ordinary holders wait while a managed query owns its lease, including cancellation.
++    if ((token && !botLoading.empty()) || (!token && HasManagedLogins())) return false;
++    auto lease = AcquireBotLoginLease(playerGuid, token);
++    if (!lease) return false;
++    // Includes the existing core's pending human-login tracker. Our own query
++    // has not acquired that tracker yet. This is a conservative admission check.
++    if (race_native::CharacterLoginPending::IsCharacterLoginPending(playerGuid.GetCounter())) return false;
+     // bot is loading
+     if (botLoading.find(playerGuid) != botLoading.end())
+     {
+         TC_LOG_DEBUG("playerbots", "Bot %u is already loading", playerGuid.GetCounter());
+-        return;
++        return false;
+     }
+ 
+     // has bot already been added?
+-    Player* bot = ObjectAccessor::FindPlayer(playerGuid);
+-    if (bot && bot->IsInWorld())
++    Player* bot = ObjectAccessor::FindConnectedPlayer(playerGuid);
++    if (bot)
+     {
+         TC_LOG_DEBUG("playerbots", "Bot %u is already in game", playerGuid.GetCounter());
+-        return;
++        return false;
+     }
+ 
+     uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(playerGuid);
+     if (!accountId)
+     {
+         TC_LOG_DEBUG("playerbots", "Bot %u has invalid accountid", playerGuid.GetCounter());
+-        return;
++        return false;
+     }
+ 
+     // #934 (AC Bot/PlayerbotMgr.cpp AddPlayerBot): decide whether the master may control this character BEFORE it is
+@@ -112,30 +224,86 @@
+                 ChatHandler(masterSession).PSendSysMessage("Failure: You are not allowed to control bot %s", botName.c_str());
+             TC_LOG_DEBUG("playerbots", "Bot %u refused: account %u is not the master's (%u), guild or a random-bot account",
+                 playerGuid.GetCounter(), accountId, masterAccountId);
+-            return;
+-        }
+-    }
+-
++            return false;
++        }
++    }
++
++    // Configured provisioning accounts are excluded from EVERY ordinary holder,
++    // even before the asynchronous provenance load or while that load has failed.
++    if (!token && (IsRaidOwnedBot(playerGuid) || IsRaidProvisioningAccount(accountId))) return false;
++    // The caller proves new-character provenance; both account allowlists must match.
++    if (token && (sWorld->FindSession(accountId) || !IsRaidOwnedBot(playerGuid) || !IsRaidProvisioningAccount(accountId) ||
++        !sPlayerbotAIConfig->IsInRandomAccountList(accountId) ||
++        sCharacterCache->GetCharacterGroupGuidByGuid(playerGuid) ||
++        sCharacterCache->GetCharacterGuildIdByGuid(playerGuid))) return false;
+     // will be delete in WorldSession
+-    std::shared_ptr<PlayerbotLoginQueryHolder> holder = std::make_shared<PlayerbotLoginQueryHolder>(this, masterAccountId, accountId, playerGuid);
++    std::shared_ptr<PlayerbotLoginQueryHolder> holder = std::make_shared<PlayerbotLoginQueryHolder>(this, masterAccountId, accountId, playerGuid, lease);
+     if (!holder->Initialize())
+     {
+         TC_LOG_ERROR("playerbots", "Holder initialize failed");
+-        return;
+-    }
+-
++        return false;
++    }
++
++    // Reserve addclass initialization only after shared admission has succeeded.
++    if (addclassLevel)
++    {
++        std::lock_guard<std::mutex> lock(sAddclassMutex);
++        sAddclassPending[playerGuid] = addclassLevel;
++    }
+     botLoading.insert(playerGuid);
+ 
+     sWorld->AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(holder)).AfterComplete([this](SQLQueryHolderBase const& holder)
+     {
+             HandlePlayerBotLoginCallback(static_cast<PlayerbotLoginQueryHolder const&>(holder));
+     });
++    return true;
+ }
+ 
+ void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder const& holder)
+ {
+     uint32 botAccountId = holder.GetAccountId();
+     ObjectGuid botGUID = holder.GetGuid();
++
++    auto managed = holder.GetManaged();
++    // Always remove our pending addclass metadata, including login failure/refusal.
++    struct Cleanup
++    {
++        std::unordered_set<ObjectGuid>& loading; ObjectGuid guid;
++        ~Cleanup()
++        {
++            loading.erase(guid);
++            std::lock_guard<std::mutex> lock(sAddclassMutex);
++            sAddclassPending.erase(guid);
++        }
++    } cleanup{botLoading, botGUID};
++    if ((managed && !ManagedValid(managed)) || ObjectAccessor::FindConnectedPlayer(botGUID) ||
++        sCharacterCache->GetCharacterAccountIdByGuid(botGUID) != botAccountId ||
++        (!managed && (IsRaidOwnedBot(botGUID) || IsRaidProvisioningAccount(botAccountId))) ||
++        (managed && (sWorld->FindSession(botAccountId) || !IsRaidOwnedBot(botGUID) || !IsRaidProvisioningAccount(botAccountId) ||
++            !sPlayerbotAIConfig->IsInRandomAccountList(botAccountId) ||
++            sCharacterCache->GetCharacterGroupGuidByGuid(botGUID) ||
++            sCharacterCache->GetCharacterGuildIdByGuid(botGUID))))
++    {
++        if (managed && managed->complete)
++            managed->complete(nullptr, managed->cancelled.load() ? ManagedBotLoginResult::Cancelled : ManagedBotLoginResult::Refused);
++        return;
++    }
++
++    if (managed)
++    {
++        // CHAR_SEL_CHARACTER / Player::LoadFromDB use column 34 for at_login.
++        // Reject BEFORE core login can consume reset-spells/talents/pet flags.
++        PreparedQueryResult row = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_FROM);
++        // CharacterHandler applies pending services independently of at_login flags.
++        // Refuse before class/skill/AntiError work can mutate a registered character.
++        if (holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_SERVICES) || !row || (*row)[0].GetUInt32() != botGUID.GetCounter() ||
++            (*row)[1].GetUInt32() != botAccountId || (*row)[34].GetUInt16() != 0 ||
++            (managed->verifyCharacterRow && !managed->verifyCharacterRow(row)))
++        {
++            managed->complete(nullptr, ManagedBotLoginResult::Refused);
++            return;
++        }
++    }
+ 
+     // At login DBC locale should be what the server is set to use by default (as spells etc are hardcoded to ENUS this
+     // allows channels to work as intended)
+@@ -150,7 +318,39 @@
+         TC_LOG_DEBUG("playerbots", "Bot player could not be loaded for account ID: %u", botAccountId);
+         botSession->LogoutPlayer(true);
+         delete botSession;
+-        botLoading.erase(botGUID);
++        if (managed) managed->complete(nullptr, ManagedBotLoginResult::Failed);
++        return;
++    }
++
++    if (managed)
++    {
++        // No ordinary random-manager initialization, master assignment, auto-group,
++        // auto-teleport or factory reset. Generic core login hooks have already run;
++        // the raid provisioning layer must gate any destructive reset hooks there.
++        if (!ManagedValid(managed) || bot->GetGroup() || bot->GetOriginalGroup() ||
++            bot->GetGroupInvite() || bot->GetGuildId() || !bot->IsInWorld() ||
++            bot->GetSession()->GetAccountId() != botAccountId || GET_PLAYERBOT_AI(bot))
++        {
++            botSession->LogoutPlayer(true);
++            delete botSession;
++            managed->complete(nullptr, managed->cancelled.load() ? ManagedBotLoginResult::Cancelled : ManagedBotLoginResult::Refused);
++            return;
++        }
++        if (nextManagedSessionReceipt == (std::numeric_limits<uint64>::max)())
++        {
++            botSession->LogoutPlayer(true);
++            delete botSession;
++            managed->complete(nullptr, ManagedBotLoginResult::Refused);
++            return;
++        }
++        sPlayerbotsMgr->AddPlayerbotData(bot, true);
++        {
++            std::unique_lock<std::shared_mutex> lock(playerBotsMutex);
++            playerBots[bot->GetGUID()] = bot;
++        }
++        managed->sessionReceipt = ++nextManagedSessionReceipt;
++        managedSessions[botGUID] = {managed->sessionReceipt, botSession};
++        managed->complete(bot, ManagedBotLoginResult::Loaded);
+         return;
+     }
+ 
+@@ -170,7 +370,7 @@
+     {
+         allowed = true;
+     }
+-    else if (masterSession /* && sPlayerbotAIConfig->allowGuildBots*/ && bot->GetGuildId() != 0 && bot->GetGuildId() == masterPlayer->GetGuildId())
++    else if (masterPlayer /* && sPlayerbotAIConfig->allowGuildBots*/ && bot->GetGuildId() != 0 && bot->GetGuildId() == masterPlayer->GetGuildId())
+     {
+         allowed = true;
+     }
+@@ -192,8 +392,8 @@
+             TC_LOG_DEBUG("playerbots", "PlayerbotMgr not found for master player with GUID: %u", masterPlayer->GetGUID().GetCounter());
+         }
+ 
+-        uint32 count = mgr->GetPlayerbotsCount();
+-        uint32 cls_count = mgr->GetPlayerbotsCountByClass(bot->GetClass());
++        uint32 count = mgr ? mgr->GetPlayerbotsCount() : sPlayerbotAIConfig->maxAddedBots;
++        uint32 cls_count = mgr ? mgr->GetPlayerbotsCountByClass(bot->GetClass()) : sPlayerbotAIConfig->maxAddedBotsPerClass;
+         if (count >= sPlayerbotAIConfig->maxAddedBots)
+         {
+             allowed = false;
+@@ -356,8 +556,50 @@
+     }
+ }
+ 
++// Scoped fix for sessions acquired by this managed path. The legacy generic logout
++// erases the holder before its hook and does not reliably erase the central AI map.
++// Never apply this receipt path to a human, ordinary bot, or replacement session.
++bool PlayerbotHolder::HasManagedSession(ObjectGuid guid, uint64 sessionReceipt) const
++{
++    // World-thread only, same ownership as managedSessions and managed callbacks.
++    auto it = managedSessions.find(guid);
++    if (!sessionReceipt || it == managedSessions.end() || it->second.serial != sessionReceipt) return false;
++    Player* bot = GetPlayerBot(guid);
++    return bot && bot->GetSession() == it->second.session && bot->GetSession()->IsBot() && IsRaidOwnedBot(guid);
++}
++
++bool PlayerbotHolder::FinishManagedBot(Player* bot, bool logoutSession, uint64 receipt, bool requireUnjoined)
++{
++    if (!bot || !bot->GetSession() || !bot->GetSession()->IsBot()) return false;
++    ObjectGuid guid = bot->GetGUID();
++    auto it = managedSessions.find(guid);
++    PlayerbotAI* ai = GET_PLAYERBOT_AI(bot);
++    if (it == managedSessions.end() || it->second.session != bot->GetSession() ||
++        (receipt && receipt != it->second.serial) || !ai || ai->IsRealPlayer() ||
++        GetPlayerBot(guid) != bot || !IsRaidOwnedBot(guid)) return false;
++    if (requireUnjoined && (ai->GetMaster() || bot->GetGroup() || bot->GetOriginalGroup() || bot->GetGroupInvite()))
++        return false;
++    WorldSession* session = bot->GetSession();
++    managedSessions.erase(it);
++    { std::unique_lock<std::shared_mutex> guard(playerBotsMutex); playerBots.erase(guid); }
++    sPlayerbotsMgr->RemovePlayerBotData(guid, true);
++    delete ai; // Releases raid/pet state while Player is still valid.
++    if (logoutSession)
++    {
++        session->LogoutPlayer(true); // Normal persistence; the logout hook now sees no owned AI.
++        delete session;
++    }
++    return true;
++}
++
++bool PlayerbotHolder::LogoutUnjoinedManagedBot(ObjectGuid guid, uint64 receipt)
++{
++    return receipt && FinishManagedBot(GetPlayerBot(guid), true, receipt, true);
++}
++
+ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
+ {
++    if (FinishManagedBot(GetPlayerBot(guid), true)) return;
+     if (Player* bot = GetPlayerBot(guid))
+     {
+         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+@@ -455,6 +697,7 @@
+ 
+ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
+ {
++    if (FinishManagedBot(GetPlayerBot(guid), false)) return;
+     if (Player* bot = GetPlayerBot(guid))
+     {
+         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+@@ -974,11 +1217,8 @@
+             if (ObjectAccessor::FindConnectedPlayer(guid))
+                 continue;
+ 
+-            {
+-                std::lock_guard<std::mutex> lock(sAddclassMutex);
+-                sAddclassPending[guid] = master->GetLevel();
+-            }
+-            AddPlayerBot(guid, master->GetSession()->GetAccountId());
++            if (!QueuePlayerBot(guid, master->GetSession()->GetAccountId(), {}, master->GetLevel()))
++                continue;
+             
+             messages.push_back("Add class " + std::string(charname));
+             return messages;

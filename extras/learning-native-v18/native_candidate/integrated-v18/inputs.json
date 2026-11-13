@@ -54,7 +54,7 @@
       "prepared_sha256": "7710bc780393b6cdb06fd164f10477d181feaf0485e21721a340285a0a02bf35",
       "review_source": "interrupt-observer-v17/core-overlays/src/server/game/Spells/SpellEffects.cpp",
       "review_source_sha256": "7710bc780393b6cdb06fd164f10477d181feaf0485e21721a340285a0a02bf35",
-      "currentness": "uploaded base only; actual linked game.lib source/member still must be confirmed before link"
+      "currentness": "Parent extracted actual game.lib member and matched CodeView source SHA256 to current source; actual evidence remains local."
     },
     {
       "target": "native/CastReceipts.cpp",
@@ -160,9 +160,16 @@
     {
       "path": "native-api/PlayerbotMgr.h",
       "sha256": "49050bb78713278eee9b0f2513b3b2ba7cf7c37c4852b1ed3835faf35aa79a5a"
+    },
+    {
+      "path": "native-api/PlayerbotMgr.cpp",
+      "sha256": "6a8379b0d58f0c25dd3683fb1a8dc0bd357b61c50cb71b1b4a9dd8a6fa853494",
+      "origin_source_sha256": "263feddd092098d84dfdfae429cbde4bf94f1c5731f51fb510363a806c1d3460",
+      "preparation": "Only Creature forward declaration and explanatory comment before first native header include; all native implementation bytes preserved."
     }
   ],
   "patch_sha256": "1adbc024db23e77e8ad703ad7d632cc456986508c890c6aa4828cb88c44afadd",
   "native_compile_verified": false,
-  "native_link_allowed": false
+  "native_link_allowed": false,
+  "previous_native_compile_report": "Parent confirmed all prior15 units compiled successfully; added native_playerbot_mgr remains uncompiled."
 }
