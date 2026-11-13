@@ -1,0 +1,19 @@
+{
+  "schema": "native-v18-link-offline-transform-check-v1",
+  "method": "Independent Python token-level check against the actual transferred V15 response and overlay; not PowerShell execution",
+  "passed": true,
+  "base_response_sha256": "146c90c86994c130519b2379713a9dfb49aaf49263830321caa8dda0c0bada2a",
+  "original_absolute_objects": 88,
+  "original_relative_objects": 6,
+  "replacements": 8,
+  "additions": 7,
+  "candidate_absolute_objects": 95,
+  "candidate_total_objects": 101,
+  "library_tokens_preserved": 37,
+  "all_other_original_tokens_preserved": true,
+  "historic_relative_tokens_equal": 22,
+  "powershell_executed": false,
+  "native_link_executed": false,
+  "deployed": false,
+  "server_started": false
+}

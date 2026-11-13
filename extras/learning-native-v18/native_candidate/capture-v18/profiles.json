@@ -1,0 +1,49 @@
+{
+  "schema": "native-v18-capture-profiles-v1",
+  "profiles": {
+    "boot": {
+      "RaidAI.ShadowCollectorV18.Enabled": 0,
+      "RaidAI.InterruptObserverV17.Shadow": 0,
+      "RaidAI.ResponseBindingV18.Shadow": 0,
+      "AiPlayerbot.BackgroundTraining.Enabled": 0,
+      "AiPlayerbot.BackgroundTraining.AdmissionEnabled": 0
+    },
+    "observe": {
+      "RaidAI.ShadowCollectorV18.Enabled": 1,
+      "RaidAI.InterruptObserverV17.Shadow": 0,
+      "RaidAI.ResponseBindingV18.Shadow": 0,
+      "AiPlayerbot.BackgroundTraining.Enabled": 1,
+      "AiPlayerbot.BackgroundTraining.AdmissionEnabled": 0
+    },
+    "first-five": {
+      "RaidAI.ShadowCollectorV18.Enabled": 1,
+      "RaidAI.InterruptObserverV17.Shadow": 0,
+      "RaidAI.ResponseBindingV18.Shadow": 0,
+      "AiPlayerbot.BackgroundTraining.Enabled": 1,
+      "AiPlayerbot.BackgroundTraining.AdmissionEnabled": 1
+    }
+  },
+  "defaults": {
+    "AiPlayerbot.BackgroundTraining.DungeonId": 464,
+    "AiPlayerbot.BackgroundTraining.MaxWorldDiffMs": 100,
+    "AiPlayerbot.BackgroundTraining.NewRunCooldownSeconds": 300
+  },
+  "native_lfg_reference": {
+    "source": "old18414 client LfgDungeons.dbc",
+    "sha256": "4bbb40c43efd3b7f29f9013ba5eec587ceab34b48a9528fc9c8e5becf728725c",
+    "id": 464,
+    "name": "青龙寺",
+    "map": 960,
+    "difficulty": 1,
+    "minlevel": 85,
+    "maxlevel": 90,
+    "roles": [
+      1,
+      1,
+      3
+    ],
+    "server_lookup_still_required": true
+  },
+  "model_control_implemented": false,
+  "raid10_or_raid25_autonomous_entry_implemented": false
+}

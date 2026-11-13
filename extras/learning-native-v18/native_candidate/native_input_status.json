@@ -1,0 +1,144 @@
+{
+  "schema": "native-input-status-v1",
+  "updated_at_utc": "2026-11-13T23:37:01.246129+00:00",
+  "production": {
+    "path": "E:\\WoW548\\Server\\worldserver.exe",
+    "sha256": "F509E005DDF59360F8C3F7EEDB4C1396A2B145F6AD4A17C54FE553FB1DBC0223",
+    "evidence": "parent thread read-only verification; not independently read by this child"
+  },
+  "candidate_v15": {
+    "path": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\isolated-link-no-pdb\\worldserver.exe",
+    "sha256": "BB0648DCB670CC4ADDC4A78AA5652EC223D3DF6C5DFF3E288837F0B4688F5CF4",
+    "deployed": false,
+    "evidence": "parent thread read-only verification; not materialized in this child"
+  },
+  "base_source": {
+    "path": "E:\\WRL-1112v1\\D\\WOW\\RaidAI-Dev\\BuildSources\\prod0d107-raid-utf8-5c4d3725e00b",
+    "is_latest_merged_snapshot": false,
+    "requirement": "apply exact link/header input manifest overlays; never overwrite F509 with this base"
+  },
+  "v16": {
+    "linked_evidence_received": false,
+    "known_files": [
+      "AttemptBook.h",
+      "test_attempt.cpp",
+      "test.cmd"
+    ],
+    "completed_release": false
+  },
+  "actual_interface_gaps_reported_by_parent": [
+    "V15 TeamReservationBook not yet wired natively",
+    "native successful interrupt receipt still missing",
+    "capture interrupted enemy cast identity before InterruptSpell clears nonce"
+  ],
+  "child_capabilities": {
+    "listed_tool_count": 269,
+    "windows_environment_attach_tool_available": false,
+    "execution_tool": "cloud exec_command only",
+    "can_read_parent_environment_id_directly": false,
+    "permission_denial": false,
+    "formal_server_started": false,
+    "model_deployed": false
+  },
+  "cloud_inputs": {
+    "historic_14_file_slice": true,
+    "v15_source_materialized": true,
+    "locale_client_tables_present": true,
+    "spell_mechanism_tables_materialized": true,
+    "server_dbc_tables": 47,
+    "current_source_is_complete_merged_tree": false
+  },
+  "library_checks": [
+    "targeted V15/link-inputs/cast-receipts title searches no matching source package",
+    "broader search found old migration manifest libfile_c6c6387bea7c819183f18a725c3f5cd5 from 2026-11-12; no action-runtime-v15 or SpellEffect/Cooldowns entry found",
+    "recent listing latest source zip is old 57,833-byte 14-file package; not V15"
+  ],
+  "minimum_parent_transfer_request": {
+    "via": "supported Library create/materialize workflow; consumer verifies hashes; user need not manually transfer",
+    "stage_one_files": [
+      "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\WORK.md",
+      "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\link-inputs.json",
+      "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\header-inputs.json",
+      "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\build-specs.json"
+    ],
+    "stage_one_also": "small verification/receipt files under isolated-link-no-pdb, no EXE/PDB/OBJ/LIB copy",
+    "stage_two_exact_sources": "only files named by those manifests: current Engine/Playerbot execution hooks, Spell.cpp/Unit.cpp plus relevant headers, team-coordination-v15/cast-receipts-v15 interfaces and sources; V16 AttemptBook only as explicitly unlinked experiment",
+    "mechanism_tables": [
+      "SpellEffect.dbc",
+      "SpellMisc.dbc",
+      "SpellCooldowns.dbc",
+      "SpellInterrupts.dbc",
+      "SpecializationSpells.dbc"
+    ],
+    "not_requested": [
+      "whole game copy",
+      "character/account database",
+      "live credentials",
+      "redundant build products",
+      "localization database or patches"
+    ],
+    "state": "fulfilled by received Library package; not requesting a second large transfer"
+  },
+  "materialized_package": {
+    "library_file_id": "libfile_e1ccdd12a5808191b7b4e661a0db1f94",
+    "file_id": "file_00000000157081f5b361be56ac4dfd83",
+    "library_version": 0,
+    "archive_sha256": "782f55945e98566c9515c60c4fdfe40c05af4d684979bd480db3f4d56f4f1e53",
+    "archive_bytes": 15392177,
+    "files_verified": 2864,
+    "unpacked_bytes": 80756475,
+    "source_tree": "/workspace/scratch/91fc7ee3b2c6/native-v15-input/extracted",
+    "merged_build_tree": false
+  },
+  "remaining_inputs": [
+    "actual current PlayerbotHolder implementation symbols and compatible class layout in native modules.lib",
+    "SpellEffects source identity against extracted actual current game.lib member",
+    "single final NativeBackgroundTraining Windows compilation; existing 14 successful receipts are parent evidence",
+    "actual native LINK/MAP providers and controlled backend raw collection after localization coordination"
+  ],
+  "protected_scope": {
+    "production_exe_unchanged": true,
+    "formal_server_started": false,
+    "model_deployed": false,
+    "windows_directories_modified": false,
+    "locale_patches_modified": false,
+    "user_later_authorized_offline_server_test_after_native_build": true
+  },
+  "candidate_outputs": {
+    "engine_shadow": "engine-shadow-v17",
+    "interrupt_receipts": "interrupt-observer-v17",
+    "human_participation_requirement_removed": "bot-only-mode-v17",
+    "training_queue": "BackgroundTrainingQueue.h",
+    "native_compiled": false,
+    "native_linked": false,
+    "model_control": false,
+    "native_compile_partial": true
+  },
+  "native_v18_source_delivery": {
+    "source_commit": "ed8fd2a89bba2345268c844280201cf2614e4563",
+    "source_patch_verified": true,
+    "raw_sources": 9,
+    "new_helper_dependencies": 18,
+    "compile_jobs": 15,
+    "native_compile": false,
+    "native_link": false,
+    "deployed": false,
+    "local_execution_owner": "parent thread with existing Luke-PC Windows connection",
+    "child_windows_executor_available": false,
+    "latest_source_commit": "2c6762312c0eebf0de0c87a51f804f1ee70d58fa",
+    "compiled_units": {
+      "Engine": {
+        "seconds": 20.99,
+        "sha256": "ff8988a2fe1890ac53358bfa9430de21ccf9df23ae5ac47b2173557083b705ac"
+      }
+    },
+    "playerbot_ai_first_attempt": "C1083 CastReceipts.h missing; include closure corrected in 5bcff1a",
+    "all_fifteen_native_units_compiled": false,
+    "actual_native_compile_status": "14/15 passed, reported by parent; final NativeBackgroundTraining needs selective resume",
+    "compiled_units_count": 14,
+    "compiled_units_evidence": "parent Windows compiler report; individual object hashes remain in local build-v18/compile-results.json",
+    "final_compile_failure": "Creature declaration and PlayerbotHolder header selection corrected in 2c676; matching modules.lib implementation still requires actual inspection",
+    "link_entry": "windows-link-v18",
+    "bounded_capture_entry": "capture-v18"
+  }
+}

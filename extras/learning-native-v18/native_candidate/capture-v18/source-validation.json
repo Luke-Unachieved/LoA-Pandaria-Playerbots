@@ -1,0 +1,21 @@
+{
+  "python_syntax_checked": true,
+  "config_fixture_only": true,
+  "dry_run_no_writes": true,
+  "original_configs_unchanged": true,
+  "settings_in_both_configs": true,
+  "no_local_connection_content_printed": true,
+  "model_control": false,
+  "native_server_started": false,
+  "startup_gate_fixture_checks": [
+    "original_prepare_manifest_dry_validation",
+    "tampered_input_lock_rejected",
+    "tampered_validation_receipt_rejected",
+    "external_world_config_rejected",
+    "config_symlink_escape_rejected",
+    "prior_launch_evidence_rejected_before_process_inventory"
+  ],
+  "startup_gate_fixture_checks_passed": 6,
+  "startup_gate_production_acceptance_created": false,
+  "database_accessed": false
+}
