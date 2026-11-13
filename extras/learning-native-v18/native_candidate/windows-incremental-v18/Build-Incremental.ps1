@@ -41,21 +41,18 @@ foreach ($job in $plan.jobs) {
   $oldSource=CheckedPath $job.base_source; RequireHash $oldSource $job.base_source_sha256
   $source=CheckedPath (Join-Path $SourceRoot $job.source)
   RequireHash $source $job.source_sha256
-  $lines=[IO.File]::ReadAllLines($rsp)
-  $oldCount=0;$objectCount=0;$flags=@()
-  foreach ($line in $lines) {
-    $trimmed=$line.Trim()
-    if ($trimmed.Trim('"') -eq $oldSource) { $oldCount++;continue }
-    if ($trimmed -match '^[-/]Fo') { $objectCount++;continue }
-    if ($trimmed -match '^[-/]Fd') { continue }
-    if ($trimmed -match '^[-/]F[arp]') { throw "Review unexpected side-output flag in $rsp : $trimmed" }
-    if ($trimmed -match '^[-/]Y[uc]') { throw 'Unexpected PCH dependency; use the V15 no-PCH response.' }
-    if ($trimmed -match '^@' -or $trimmed -match '\.(cpp|cc|cxx)(\.candidate)?"?$') { throw "Unexpected source/nested response token: $trimmed" }
-    $flags += $line
+  $flags=[IO.File]::ReadAllText($rsp)
+  $sourcePattern='(?<!\S)"?'+[regex]::Escape($oldSource)+'"?(?!\S)'
+  $objectPattern='(?<!\S)[-/]Fo(?:"[^"\r\n]*"|[^\s]+)'
+  $pdbPattern='(?<!\S)[-/]Fd(?:"[^"\r\n]*"|[^\s]+)'
+  if ([regex]::Matches($flags,$sourcePattern).Count -ne 1 -or [regex]::Matches($flags,$objectPattern,'IgnoreCase').Count -ne 1) {
+    throw "Ambiguous source/object tokens in base response: $rsp"
   }
-  if ($oldCount -ne 1 -or $objectCount -ne 1) { throw "Ambiguous base response: $rsp" }
-  foreach ($required in @('-std:c++20','-MD','-c')) {
-    if ($flags -notcontains $required) { throw "Missing expected ABI/compile flag: $required" }
+  if ($flags -match '(?<!\S)[-/]F[arp]' -or $flags -match '(?<!\S)[-/]Y[uc]' -or $flags -match '(?<!\S)@') {
+    throw 'Review unexpected side output, PCH use, or nested response.'
+  }
+  foreach ($required in @('[-/]std:c\+\+20','[-/]MD','[-/]c')) {
+    if ($flags -notmatch ('(?<!\S)'+$required+'(?!\S)')) { throw "Missing expected ABI/compile flag: $required" }
   }
   $includes=@()
   foreach ($dir in $job.include_dirs) {
@@ -65,8 +62,14 @@ foreach ($job in $plan.jobs) {
   }
   $obj=CheckedPath (Join-Path $OutputRoot ($job.name+'.obj'))
   $pdb=CheckedPath (Join-Path $OutputRoot ($job.name+'.pdb'))
+  # MatchEvaluator avoids treating a literal dollar in a valid path as replacement syntax.
+  $sourceReplacement='"'+$source+'"';$objectReplacement='-Fo"'+$obj+'"'
+  $flags=[regex]::Replace($flags,$sourcePattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $sourceReplacement})
+  $flags=[regex]::Replace($flags,$objectPattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $objectReplacement},'IgnoreCase')
+  $flags=[regex]::Replace($flags,$pdbPattern,'','IgnoreCase')
   $prepared += [pscustomobject]@{name=$job.name;source=$source;object=$obj;
-    response=(($includes+$flags+@('-Fo"'+$obj+'"','-Fd"'+$pdb+'"','"'+$source+'"')) -join "`r`n")+"`r`n"}
+    response=(($includes -join "`r`n")+"`r`n"+$flags+"`r`n"+'-Fd"'+$pdb+'"'+"`r`n")}
+
 }
 if (!$Compile) { Write-Output "Validated $($prepared.Count) compile jobs; no files were written and nothing was compiled.";return }
 [IO.Directory]::CreateDirectory($OutputRoot)|Out-Null

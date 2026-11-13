@@ -1,0 +1,11 @@
+{
+  "source_preparation_with_actual_nine_inputs": true,
+  "standard_git_apply": true,
+  "all_final_source_hashes_checked": true,
+  "original_raw_input_hashes_unchanged": true,
+  "idempotent_no_write_second_apply": true,
+  "native_compilation": false,
+  "native_link": false,
+  "deployed": false,
+  "temporary_sources_removed_after_check": true
+}

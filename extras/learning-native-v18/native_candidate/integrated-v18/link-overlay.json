@@ -1,0 +1,94 @@
+{
+  "schema": "native-v18-link-overlay-v1",
+  "base_link_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\isolated-link-no-pdb\\Link.rsp",
+  "base_link_response_sha256": "146c90c86994c130519b2379713a9dfb49aaf49263830321caa8dda0c0bada2a",
+  "base_explicit_inputs": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\link-inputs.json",
+  "base_explicit_inputs_sha256": "919e3a658fa14f5e80ae2103762f6194d0bc9ffe895df9da7225bc1820fb7fbf",
+  "preserve_explicit_input_count": 88,
+  "object_overlays": [
+    {
+      "job": "engine",
+      "replaces_explicit_object": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v14\\Engine.obj",
+      "new_object": "engine.obj"
+    },
+    {
+      "job": "playerbot_ai",
+      "replaces_explicit_object": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v14\\PlayerbotAI.obj",
+      "new_object": "playerbot_ai.obj"
+    },
+    {
+      "job": "authority",
+      "replaces_explicit_object": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.obj",
+      "new_object": "authority.obj"
+    },
+    {
+      "job": "native_spell",
+      "replaces_explicit_object": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\native_spell.obj",
+      "new_object": "native_spell.obj"
+    },
+    {
+      "job": "native_unit",
+      "replaces_explicit_object": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\native_unit.obj",
+      "new_object": "native_unit.obj"
+    },
+    {
+      "job": "native_spell_effects",
+      "replaces_explicit_object": null,
+      "new_object": "native_spell_effects.obj"
+    },
+    {
+      "job": "cast_receipts",
+      "replaces_explicit_object": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\cast_receipts.obj",
+      "new_object": "cast_receipts.obj"
+    },
+    {
+      "job": "dual_pending",
+      "replaces_explicit_object": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v11\\dual_pending.obj",
+      "new_object": "dual_pending.obj"
+    },
+    {
+      "job": "module",
+      "replaces_explicit_object": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v10\\module.obj",
+      "new_object": "module.obj"
+    },
+    {
+      "job": "EngineShadowObserverV17",
+      "replaces_explicit_object": null,
+      "new_object": "EngineShadowObserverV17.obj"
+    },
+    {
+      "job": "NativeShadowCollectorV18",
+      "replaces_explicit_object": null,
+      "new_object": "NativeShadowCollectorV18.obj"
+    },
+    {
+      "job": "BoundedShadowWriterV18",
+      "replaces_explicit_object": null,
+      "new_object": "BoundedShadowWriterV18.obj"
+    },
+    {
+      "job": "ResponseBindingV18",
+      "replaces_explicit_object": null,
+      "new_object": "ResponseBindingV18.obj"
+    },
+    {
+      "job": "InterruptObserver",
+      "replaces_explicit_object": null,
+      "new_object": "InterruptObserver.obj"
+    },
+    {
+      "job": "NativeBackgroundTraining",
+      "replaces_explicit_object": null,
+      "new_object": "NativeBackgroundTraining.obj"
+    }
+  ],
+  "new_explicit_count": 95,
+  "native_link_allowed": false,
+  "unresolved": [
+    "SpellEffects.cpp actual local game.lib provenance/currentness",
+    "actual MSVC compile of all15 TUs",
+    "native header dependency closure/local include resolution",
+    "native runtime proof"
+  ],
+  "never_deploy_from_branch_base": true
+}

@@ -1,0 +1,317 @@
+{
+  "schema": "native-shadow-incremental-compile-v1",
+  "scope": "Composed default-off V18 raw collector, response binding, first-five Group/LFG candidate. Not a completed learning system.",
+  "vcvars": "E:\\WoW548\\BuildTools\\VS2022\\VC\\Auxiliary\\Build\\vcvars64.bat",
+  "formal_exe": "E:\\WoW548\\Server\\worldserver.exe",
+  "formal_sha256": "f509e005ddf59360f8c3f7eedb4c1396a2b145f6ad4a17c54fe553fb1dbc0223",
+  "source_files": [
+    {
+      "path": "new/BoundedShadowWriterV18.cpp",
+      "sha256": "75b8e2623b47c61142f044507d751c4744b5ce2c791b76a065043a4fd8f6b2a8"
+    },
+    {
+      "path": "new/BoundedShadowWriterV18.h",
+      "sha256": "376332d4cb02fbf4705cb0b716061698858f0fe18084589b126c17cc2ab51ce7"
+    },
+    {
+      "path": "new/EngineShadowObserverV17.cpp",
+      "sha256": "6d423643b5355a88411c3503960c31936391c3f7f3319e52829dcd6ce25d13f9"
+    },
+    {
+      "path": "new/EngineShadowObserverV17.h",
+      "sha256": "0433d1e04905462d71d8364053521cfc9d5fd64ca3acd7c96b43a9fd89c946ef"
+    },
+    {
+      "path": "new/GarajalSelfReturnGate.h",
+      "sha256": "eef2c98f1ba5524e630c63119b04b444bdafc59a5ae9c1de9f23a90c6adbd49a"
+    },
+    {
+      "path": "new/InterruptObserver.cpp",
+      "sha256": "5053fa882f92ab038ed4ceb1f25cd1929bf7b3f10cd282769eac3ed74f4b99b1"
+    },
+    {
+      "path": "new/InterruptObserver.h",
+      "sha256": "8987a2f7c6de12bf1381aafb3a666d7ee120a289e9ab73d09d8fc887bacd5ce0"
+    },
+    {
+      "path": "new/NativeBackgroundTraining.cpp",
+      "sha256": "c0bd50280300df7bb768eefdfb9e9ad971b900a6e0c1f88376ec1330a3516249"
+    },
+    {
+      "path": "new/NativeBackgroundTraining.h",
+      "sha256": "67090310e9be55c3e1939ed9c2dd8db8435d38bcca0d20b6f174d971eef747b9"
+    },
+    {
+      "path": "new/NativeShadowCollectorV18.cpp",
+      "sha256": "2d4915b07e9e81e3a00294ee02ee00ab309c9ba181560a8d959d33346879a321"
+    },
+    {
+      "path": "new/NativeShadowCollectorV18.h",
+      "sha256": "6b712c91aace02fc330e6e88dc6c475a6856b526c88ad858821717ff860d66dc"
+    },
+    {
+      "path": "new/NativeTrainingRoster.h",
+      "sha256": "af4e01b63b001937799d337fcc57fa73cd86166e099a6f107f136e103c50a4f4"
+    },
+    {
+      "path": "new/ResponseBindingV18.cpp",
+      "sha256": "55c8c204cc742b74b9ecb2f12f1294ab2ba695fa21f5820ab7844b8df736a73c"
+    },
+    {
+      "path": "new/ResponseBindingV18.h",
+      "sha256": "343a17bbb5f6fa5a7c1e1d4d234eede1068fc5aa45f6c795e6368f9eb0d955fb"
+    },
+    {
+      "path": "new/ScopeRegistryV18.h",
+      "sha256": "c0242171c60033a256f1701374e782fe261565489f4f78dd0804de2d06a0848f"
+    },
+    {
+      "path": "new/deps/BackgroundTrainingQueue.h",
+      "sha256": "8689a05dc1e4f30a8053e619778a0ae5e3aafeb09509b5aaf5205f6848065d11"
+    },
+    {
+      "path": "new/deps/interrupt-attempt-v16/AttemptBook.h",
+      "sha256": "aa88ae9ceb9cd32818512abefc9eccbb911ba7b9c82c1c65d02589f83c2175c8"
+    },
+    {
+      "path": "new/deps/team-coordination-v15/TeamReservationBook.h",
+      "sha256": "f0e35eb451b747534c375f1d57443a73fef4508886e9e59d7532c370ce16c02b"
+    },
+    {
+      "path": "prepared/native/Engine.cpp",
+      "sha256": "c63c7d4f6893ec11e67435ec9a9151793d1b6c957ce3804ed1ccefde05aab58e"
+    },
+    {
+      "path": "prepared/native/PlayerbotAI.cpp",
+      "sha256": "7221374b0dac96be1c206a1b9acb8d319b354acc8820696e1ea8bfa425ce0425"
+    },
+    {
+      "path": "prepared/native/MechanicActionAuthority.cpp",
+      "sha256": "52c5f5e29123c6e40f8f41a56234925b2b3525dfeeac03bdd829d7caa5a80eda"
+    },
+    {
+      "path": "prepared/native/Spell.cpp",
+      "sha256": "de824bf9fa6e3f09856cee9fea5dbdef147a004dc3eb0520cc55f4f98d7bb5e1"
+    },
+    {
+      "path": "prepared/native/Unit.cpp",
+      "sha256": "0fce22cbedfc479a6699a1c249dd08d4fdb80eb14fdb6e13b7e2c83fcd1562d8"
+    },
+    {
+      "path": "prepared/native/SpellEffects.cpp",
+      "sha256": "7710bc780393b6cdb06fd164f10477d181feaf0485e21721a340285a0a02bf35"
+    },
+    {
+      "path": "prepared/native/CastReceipts.cpp",
+      "sha256": "74f79fb020b63c2050b8019396ef00e90d2c546d7b7ebf992d53d21d51b3f49f"
+    },
+    {
+      "path": "prepared/native/DualInterrupt.coordinated.cpp",
+      "sha256": "ad137cdc37ac49e88ca0a7f83fd10d3159af5e8df7ed368a1348132df3c10e33"
+    },
+    {
+      "path": "prepared/native/mod_playerbots.cpp",
+      "sha256": "ab64df991c4dadf193f29b8e64aa28382fbbce217d36f7759d7c5db2fbd1ae1c"
+    }
+  ],
+  "jobs": [
+    {
+      "name": "engine",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v14\\Engine.object.rsp",
+      "base_response_sha256": "e68bbcd3e9a8595e9148cd32c1a39ced7093ac0382fd8c38e959350ce866c15d",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\durumu-duty-v14\\entrypoint-candidates\\Engine.cpp",
+      "base_source_sha256": "3a4576ff06835e2e877e1ca421b6aadc9ae96bd84929a39f21dcde4a5c1e5d5e",
+      "source": "prepared/native/Engine.cpp",
+      "source_sha256": "c63c7d4f6893ec11e67435ec9a9151793d1b6c957ce3804ed1ccefde05aab58e",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ]
+    },
+    {
+      "name": "playerbot_ai",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v14\\PlayerbotAI.object.rsp",
+      "base_response_sha256": "d653d0a54f7766349828ea6d45beeeb69e1fedbe162bb3ccf8b988742f7a86e5",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\durumu-duty-v14\\entrypoint-candidates\\PlayerbotAI.cpp",
+      "base_source_sha256": "c7df68f3f0c11f6f002344a56eab9eaea7d91e73727a9ad04d20b75daf79a557",
+      "source": "prepared/native/PlayerbotAI.cpp",
+      "source_sha256": "7221374b0dac96be1c206a1b9acb8d319b354acc8820696e1ea8bfa425ce0425",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ]
+    },
+    {
+      "name": "authority",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
+      "base_response_sha256": "0a68bc4c6f042ac49350c47ba822e94f9b276eeccaa6764a28c70ca2b725ec0a",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\MechanicActionAuthority.cpp",
+      "base_source_sha256": "895c0bc3a4f970d66743476f1125bbf581e3d9ef9b97a777d2fd731317fd6f98",
+      "source": "prepared/native/MechanicActionAuthority.cpp",
+      "source_sha256": "52c5f5e29123c6e40f8f41a56234925b2b3525dfeeac03bdd829d7caa5a80eda",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ]
+    },
+    {
+      "name": "native_spell",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\native_spell.object.rsp",
+      "base_response_sha256": "488e371dc45a1e27f7e59e325d52e5ab84b9c1a7ceda3697c7151708f5fa4a87",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\Spell.cpp.candidate",
+      "base_source_sha256": "0b7e28adc2f8ab571fbe0dd689bc8c294a751d08adbef07cc1f157524133e5ca",
+      "source": "prepared/native/Spell.cpp",
+      "source_sha256": "de824bf9fa6e3f09856cee9fea5dbdef147a004dc3eb0520cc55f4f98d7bb5e1",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ]
+    },
+    {
+      "name": "native_unit",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\native_unit.object.rsp",
+      "base_response_sha256": "dcaa28f4b5def39feb8a6e04bae4b9eb44c731186772c63eff03a2fc18b595a8",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\Unit.cpp.candidate",
+      "base_source_sha256": "b1ce44ce84103bb7baf35031ad1d40f5e22a4c8542b251a34d5a63583555a780",
+      "source": "prepared/native/Unit.cpp",
+      "source_sha256": "0fce22cbedfc479a6699a1c249dd08d4fdb80eb14fdb6e13b7e2c83fcd1562d8",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ]
+    },
+    {
+      "name": "native_spell_effects",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\native_spell.object.rsp",
+      "base_response_sha256": "488e371dc45a1e27f7e59e325d52e5ab84b9c1a7ceda3697c7151708f5fa4a87",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\Spell.cpp.candidate",
+      "base_source_sha256": "0b7e28adc2f8ab571fbe0dd689bc8c294a751d08adbef07cc1f157524133e5ca",
+      "source": "prepared/native/SpellEffects.cpp",
+      "source_sha256": "7710bc780393b6cdb06fd164f10477d181feaf0485e21721a340285a0a02bf35",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ]
+    },
+    {
+      "name": "cast_receipts",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\cast_receipts.object.rsp",
+      "base_response_sha256": "fd801b1cca60194759448cf5b743572834a4c8b3c0c945d21b4ae68a7004c90e",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\CastReceipts.cpp",
+      "base_source_sha256": "bd930ee1f60b12973422fa452f21d4ec848e5237d26a9780e5d8b7aaddde9b35",
+      "source": "prepared/native/CastReceipts.cpp",
+      "source_sha256": "74f79fb020b63c2050b8019396ef00e90d2c546d7b7ebf992d53d21d51b3f49f",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ]
+    },
+    {
+      "name": "dual_pending",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v11\\dual_pending.object.rsp",
+      "base_response_sha256": "c82b2a01af58131934d8a42688e1709b0879b5c114ddd693567bf2417ae4b017",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11\\DualInterrupt.coordinated.cpp",
+      "base_source_sha256": "6cfa4433ae8bffc0a896a9f966d1736686592786fccf890546d9b5d4885fb652",
+      "source": "prepared/native/DualInterrupt.coordinated.cpp",
+      "source_sha256": "ad137cdc37ac49e88ca0a7f83fd10d3159af5e8df7ed368a1348132df3c10e33",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ]
+    },
+    {
+      "name": "module",
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v10\\module.object.rsp",
+      "base_response_sha256": "0682460f4720f6e2ae2cfe15ede96f51dcc74fd96277b446b7ac189ce5619977",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v10\\mod_playerbots.cpp",
+      "base_source_sha256": "ebaffea0d534b35a57277d4b75f9e578233654902412ac05a3010e2364f65ff4",
+      "source": "prepared/native/mod_playerbots.cpp",
+      "source_sha256": "ab64df991c4dadf193f29b8e64aa28382fbbce217d36f7759d7c5db2fbd1ae1c",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ]
+    },
+    {
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
+      "base_response_sha256": "0a68bc4c6f042ac49350c47ba822e94f9b276eeccaa6764a28c70ca2b725ec0a",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\MechanicActionAuthority.cpp",
+      "base_source_sha256": "895c0bc3a4f970d66743476f1125bbf581e3d9ef9b97a777d2fd731317fd6f98",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ],
+      "name": "EngineShadowObserverV17",
+      "source": "new/EngineShadowObserverV17.cpp",
+      "source_sha256": "6d423643b5355a88411c3503960c31936391c3f7f3319e52829dcd6ce25d13f9"
+    },
+    {
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
+      "base_response_sha256": "0a68bc4c6f042ac49350c47ba822e94f9b276eeccaa6764a28c70ca2b725ec0a",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\MechanicActionAuthority.cpp",
+      "base_source_sha256": "895c0bc3a4f970d66743476f1125bbf581e3d9ef9b97a777d2fd731317fd6f98",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ],
+      "name": "NativeShadowCollectorV18",
+      "source": "new/NativeShadowCollectorV18.cpp",
+      "source_sha256": "2d4915b07e9e81e3a00294ee02ee00ab309c9ba181560a8d959d33346879a321"
+    },
+    {
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
+      "base_response_sha256": "0a68bc4c6f042ac49350c47ba822e94f9b276eeccaa6764a28c70ca2b725ec0a",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\MechanicActionAuthority.cpp",
+      "base_source_sha256": "895c0bc3a4f970d66743476f1125bbf581e3d9ef9b97a777d2fd731317fd6f98",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ],
+      "name": "BoundedShadowWriterV18",
+      "source": "new/BoundedShadowWriterV18.cpp",
+      "source_sha256": "75b8e2623b47c61142f044507d751c4744b5ce2c791b76a065043a4fd8f6b2a8"
+    },
+    {
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
+      "base_response_sha256": "0a68bc4c6f042ac49350c47ba822e94f9b276eeccaa6764a28c70ca2b725ec0a",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\MechanicActionAuthority.cpp",
+      "base_source_sha256": "895c0bc3a4f970d66743476f1125bbf581e3d9ef9b97a777d2fd731317fd6f98",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ],
+      "name": "ResponseBindingV18",
+      "source": "new/ResponseBindingV18.cpp",
+      "source_sha256": "55c8c204cc742b74b9ecb2f12f1294ab2ba695fa21f5820ab7844b8df736a73c"
+    },
+    {
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
+      "base_response_sha256": "0a68bc4c6f042ac49350c47ba822e94f9b276eeccaa6764a28c70ca2b725ec0a",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\MechanicActionAuthority.cpp",
+      "base_source_sha256": "895c0bc3a4f970d66743476f1125bbf581e3d9ef9b97a777d2fd731317fd6f98",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ],
+      "name": "InterruptObserver",
+      "source": "new/InterruptObserver.cpp",
+      "source_sha256": "5053fa882f92ab038ed4ceb1f25cd1929bf7b3f10cd282769eac3ed74f4b99b1"
+    },
+    {
+      "base_response": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\authority.object.rsp",
+      "base_response_sha256": "0a68bc4c6f042ac49350c47ba822e94f9b276eeccaa6764a28c70ca2b725ec0a",
+      "base_source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\MechanicActionAuthority.cpp",
+      "base_source_sha256": "895c0bc3a4f970d66743476f1125bbf581e3d9ef9b97a777d2fd731317fd6f98",
+      "include_dirs": [
+        "new",
+        "prepared/native"
+      ],
+      "name": "NativeBackgroundTraining",
+      "source": "new/NativeBackgroundTraining.cpp",
+      "source_sha256": "c0bd50280300df7bb768eefdfb9e9ad971b900a6e0c1f88376ec1330a3516249"
+    }
+  ],
+  "native_compile_verified": false,
+  "linked": false,
+  "deployed": false
+}

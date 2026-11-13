@@ -1,11 +1,11 @@
 # Native learning integration workbench
 
-Source-only development checkpoint. This folder is not a completed or deployed learning AI. The first incremental entry compiles only the bounded raw Engine observer translation unit using existing verified V15 Windows compiler flags. It does not yet install the native provider, start training teams, write a database, link a server or activate a model.
+The current source-only integration is in `native_candidate/integrated-v18/`. It contains a minimal patch for nine native sources, eighteen helper/dependency files and a fifteen-unit incremental compile plan. Actual Windows compilation/linking, deployment, native gameplay and learning improvement remain unverified.
 
-See `native_candidate/windows-incremental-v18/README.md` for exact dependencies and commands. Source and response input hashes are checked before compilation. The Windows build has not yet been executed for this checkpoint.
+Start with `native_candidate/integrated-v18/README.md`. The earlier standalone V17 observer compile entry is retained only as the first module compiler check. For V18 use the local V18 observer header/TU consistently; never mix its layout with V17.
 
-The repository branch base is an upstream fork snapshot, **not** the current locally merged F509 server source. Do not build and deploy the whole branch over that server. Retain the existing V15 link objects and local fixes; use only reviewed incremental files from this folder.
+This branch base is an upstream fork snapshot, not the current merged F509 server source. Do not build/deploy the whole branch over the local server. Use only the reviewed sparse increment and retain existing V15 link objects and local fixes. No binary, database, account, character data or map package is in this increment.
 
-Current development: native collector/provider/writer, actual spell-response binding and native background queue adapter are being composed from existing LoA/V14/V15/V16 work. Planned final budget is three teams of 5/10/25 actors. No all-raid, heroic, three-team runtime, learning improvement or resource result is claimed here.
+Source reuse: existing LoA engine/class execution/Group/LFG; V14 raid constraints; V15 cast identity and reservation book; V16 attempt proof book. External research is not claimed as transplanted production code.
 
-Existing LoA Engine/skill execution, group/LFG and party-role interfaces are the compatibility foundation. External research projects are tracked separately; finding a repository is not the same as transplanting its code.
+Three teams of5/10/25 actors remain the planned final budget. Current native scheduler covers first five-player Group/LFG admission only; repeat runs and autonomous10/25 entry are not completed. A separate normally progressing world-player/auditor is being developed, with AI1xXP and human5xXP as the required policy.

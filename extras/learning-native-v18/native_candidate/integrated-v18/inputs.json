@@ -1,0 +1,164 @@
+{
+  "schema": "native-v18-source-inputs-v1",
+  "native_sources": [
+    {
+      "target": "native/Engine.cpp",
+      "source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\durumu-duty-v14\\entrypoint-candidates\\Engine.cpp",
+      "source_sha256": "3a4576ff06835e2e877e1ca421b6aadc9ae96bd84929a39f21dcde4a5c1e5d5e",
+      "normalized_source_sha256": "6e646c28b52dc12b8221538a86479942568c4bef788bc2ce63351bb0251c7987",
+      "prepared_sha256": "c63c7d4f6893ec11e67435ec9a9151793d1b6c957ce3804ed1ccefde05aab58e",
+      "review_source": "collector-v18/Engine.cpp.candidate",
+      "review_source_sha256": "ab618ffce432c1fdc3cb09a5d05ee7b8fb4f52947f3af59bcc8b49215f8c7c49"
+    },
+    {
+      "target": "native/PlayerbotAI.cpp",
+      "source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\durumu-duty-v14\\entrypoint-candidates\\PlayerbotAI.cpp",
+      "source_sha256": "c7df68f3f0c11f6f002344a56eab9eaea7d91e73727a9ad04d20b75daf79a557",
+      "normalized_source_sha256": "ea5fa794f2664a2dbefd778928723b80c17adee42dc7bc8440e452be50c5f7cd",
+      "prepared_sha256": "7221374b0dac96be1c206a1b9acb8d319b354acc8820696e1ea8bfa425ce0425",
+      "review_source": "composed-v18/PlayerbotAI.cpp",
+      "review_source_sha256": "2c0b398061b6a61893a380458ef4fbf79d55e1d34450decfadd1ddef712abc94"
+    },
+    {
+      "target": "native/MechanicActionAuthority.cpp",
+      "source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v15\\MechanicActionAuthority.cpp",
+      "source_sha256": "895c0bc3a4f970d66743476f1125bbf581e3d9ef9b97a777d2fd731317fd6f98",
+      "normalized_source_sha256": "c0f2d0f96ff2506b184fe6b741fc801bb8020fe3206f5efde12ec369b053ef4a",
+      "prepared_sha256": "52c5f5e29123c6e40f8f41a56234925b2b3525dfeeac03bdd829d7caa5a80eda",
+      "review_source": "collector-v18/MechanicActionAuthority.cpp.candidate",
+      "review_source_sha256": "3113d292dd3681b5cf8bc03c449c6ade42f8d82431792f4f95fca11d1aae5d7f"
+    },
+    {
+      "target": "native/Spell.cpp",
+      "source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\Spell.cpp.candidate",
+      "source_sha256": "0b7e28adc2f8ab571fbe0dd689bc8c294a751d08adbef07cc1f157524133e5ca",
+      "normalized_source_sha256": "0b7e28adc2f8ab571fbe0dd689bc8c294a751d08adbef07cc1f157524133e5ca",
+      "prepared_sha256": "de824bf9fa6e3f09856cee9fea5dbdef147a004dc3eb0520cc55f4f98d7bb5e1",
+      "review_source": "interrupt-observer-v17/core-overlays/src/server/game/Spells/Spell.cpp",
+      "review_source_sha256": "de824bf9fa6e3f09856cee9fea5dbdef147a004dc3eb0520cc55f4f98d7bb5e1"
+    },
+    {
+      "target": "native/Unit.cpp",
+      "source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\Unit.cpp.candidate",
+      "source_sha256": "b1ce44ce84103bb7baf35031ad1d40f5e22a4c8542b251a34d5a63583555a780",
+      "normalized_source_sha256": "b1ce44ce84103bb7baf35031ad1d40f5e22a4c8542b251a34d5a63583555a780",
+      "prepared_sha256": "0fce22cbedfc479a6699a1c249dd08d4fdb80eb14fdb6e13b7e2c83fcd1562d8",
+      "review_source": "interrupt-observer-v17/core-overlays/src/server/game/Entities/Unit/Unit.cpp",
+      "review_source_sha256": "0fce22cbedfc479a6699a1c249dd08d4fdb80eb14fdb6e13b7e2c83fcd1562d8"
+    },
+    {
+      "target": "native/SpellEffects.cpp",
+      "source": "E:\\WRL-1112v1\\D\\WOW\\RaidAI-Dev\\BuildSources\\prod0d107-raid-utf8-5c4d3725e00b\\src\\server\\game\\Spells\\SpellEffects.cpp",
+      "source_sha256": "fd4f0319aba4cb1e5f5214925fc069c8146c0819427690c39ef2518c2d67ea65",
+      "normalized_source_sha256": "ae50b0f1486f313ba19b16de5ad2a96a23a163abcfdd092d50a45eaa5a664dea",
+      "prepared_sha256": "7710bc780393b6cdb06fd164f10477d181feaf0485e21721a340285a0a02bf35",
+      "review_source": "interrupt-observer-v17/core-overlays/src/server/game/Spells/SpellEffects.cpp",
+      "review_source_sha256": "7710bc780393b6cdb06fd164f10477d181feaf0485e21721a340285a0a02bf35",
+      "currentness": "uploaded base only; actual linked game.lib source/member still must be confirmed before link"
+    },
+    {
+      "target": "native/CastReceipts.cpp",
+      "source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\cast-receipts-v15\\CastReceipts.cpp",
+      "source_sha256": "bd930ee1f60b12973422fa452f21d4ec848e5237d26a9780e5d8b7aaddde9b35",
+      "normalized_source_sha256": "3a0c1c13b2fcd73e250989c02c26b69d5bb49b463c428ec8bc453e3af408a838",
+      "prepared_sha256": "74f79fb020b63c2050b8019396ef00e90d2c546d7b7ebf992d53d21d51b3f49f",
+      "review_source": "response-binding-v18/candidate-overlays/RuntimeCheck-v1/RaidParallel-v1/cast-receipts-v15/CastReceipts.cpp",
+      "review_source_sha256": "74f79fb020b63c2050b8019396ef00e90d2c546d7b7ebf992d53d21d51b3f49f"
+    },
+    {
+      "target": "native/DualInterrupt.coordinated.cpp",
+      "source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\ThroneSiegeAudit\\pending-attempt-v11\\DualInterrupt.coordinated.cpp",
+      "source_sha256": "6cfa4433ae8bffc0a896a9f966d1736686592786fccf890546d9b5d4885fb652",
+      "normalized_source_sha256": "38d61a9b7fa6019da0a083c99e4358d773ccf2c9d29bbf8cf29eb6a97fd99427",
+      "prepared_sha256": "ad137cdc37ac49e88ca0a7f83fd10d3159af5e8df7ed368a1348132df3c10e33",
+      "review_source": "response-binding-v18/candidate-overlays/RuntimeCheck-v1/ThroneSiegeAudit/pending-attempt-v11/DualInterrupt.coordinated.cpp",
+      "review_source_sha256": "2f5bd3d668ad30502a509651be8dcd0e945e900fedd6c5677594170cc57c9813"
+    },
+    {
+      "target": "native/mod_playerbots.cpp",
+      "source": "E:\\WRL-1112v1\\RuntimeCheck-v1\\RaidParallel-v1\\action-runtime-v10\\mod_playerbots.cpp",
+      "source_sha256": "ebaffea0d534b35a57277d4b75f9e578233654902412ac05a3010e2364f65ff4",
+      "normalized_source_sha256": "88aa74179fe3864c7c247048c2e86d726e65e6286e5c5b420b65a60280b1135b",
+      "prepared_sha256": "ab64df991c4dadf193f29b8e64aa28382fbbce217d36f7759d7c5db2fbd1ae1c",
+      "review_source": "scheduler-v18/mod_playerbots.cpp.candidate",
+      "review_source_sha256": "ab64df991c4dadf193f29b8e64aa28382fbbce217d36f7759d7c5db2fbd1ae1c"
+    }
+  ],
+  "new_sources": [
+    {
+      "path": "new/BoundedShadowWriterV18.cpp",
+      "sha256": "75b8e2623b47c61142f044507d751c4744b5ce2c791b76a065043a4fd8f6b2a8"
+    },
+    {
+      "path": "new/BoundedShadowWriterV18.h",
+      "sha256": "376332d4cb02fbf4705cb0b716061698858f0fe18084589b126c17cc2ab51ce7"
+    },
+    {
+      "path": "new/EngineShadowObserverV17.cpp",
+      "sha256": "6d423643b5355a88411c3503960c31936391c3f7f3319e52829dcd6ce25d13f9"
+    },
+    {
+      "path": "new/EngineShadowObserverV17.h",
+      "sha256": "0433d1e04905462d71d8364053521cfc9d5fd64ca3acd7c96b43a9fd89c946ef"
+    },
+    {
+      "path": "new/GarajalSelfReturnGate.h",
+      "sha256": "eef2c98f1ba5524e630c63119b04b444bdafc59a5ae9c1de9f23a90c6adbd49a"
+    },
+    {
+      "path": "new/InterruptObserver.cpp",
+      "sha256": "5053fa882f92ab038ed4ceb1f25cd1929bf7b3f10cd282769eac3ed74f4b99b1"
+    },
+    {
+      "path": "new/InterruptObserver.h",
+      "sha256": "8987a2f7c6de12bf1381aafb3a666d7ee120a289e9ab73d09d8fc887bacd5ce0"
+    },
+    {
+      "path": "new/NativeBackgroundTraining.cpp",
+      "sha256": "c0bd50280300df7bb768eefdfb9e9ad971b900a6e0c1f88376ec1330a3516249"
+    },
+    {
+      "path": "new/NativeBackgroundTraining.h",
+      "sha256": "67090310e9be55c3e1939ed9c2dd8db8435d38bcca0d20b6f174d971eef747b9"
+    },
+    {
+      "path": "new/NativeShadowCollectorV18.cpp",
+      "sha256": "2d4915b07e9e81e3a00294ee02ee00ab309c9ba181560a8d959d33346879a321"
+    },
+    {
+      "path": "new/NativeShadowCollectorV18.h",
+      "sha256": "6b712c91aace02fc330e6e88dc6c475a6856b526c88ad858821717ff860d66dc"
+    },
+    {
+      "path": "new/NativeTrainingRoster.h",
+      "sha256": "af4e01b63b001937799d337fcc57fa73cd86166e099a6f107f136e103c50a4f4"
+    },
+    {
+      "path": "new/ResponseBindingV18.cpp",
+      "sha256": "55c8c204cc742b74b9ecb2f12f1294ab2ba695fa21f5820ab7844b8df736a73c"
+    },
+    {
+      "path": "new/ResponseBindingV18.h",
+      "sha256": "343a17bbb5f6fa5a7c1e1d4d234eede1068fc5aa45f6c795e6368f9eb0d955fb"
+    },
+    {
+      "path": "new/ScopeRegistryV18.h",
+      "sha256": "c0242171c60033a256f1701374e782fe261565489f4f78dd0804de2d06a0848f"
+    },
+    {
+      "path": "new/deps/BackgroundTrainingQueue.h",
+      "sha256": "8689a05dc1e4f30a8053e619778a0ae5e3aafeb09509b5aaf5205f6848065d11"
+    },
+    {
+      "path": "new/deps/interrupt-attempt-v16/AttemptBook.h",
+      "sha256": "aa88ae9ceb9cd32818512abefc9eccbb911ba7b9c82c1c65d02589f83c2175c8"
+    },
+    {
+      "path": "new/deps/team-coordination-v15/TeamReservationBook.h",
+      "sha256": "f0e35eb451b747534c375f1d57443a73fef4508886e9e59d7532c370ce16c02b"
+    }
+  ],
+  "patch_sha256": "1adbc024db23e77e8ad703ad7d632cc456986508c890c6aa4828cb88c44afadd",
+  "native_compile_verified": false,
+  "native_link_allowed": false
+}

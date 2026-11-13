@@ -1,0 +1,627 @@
+--- a/native/Engine.cpp
++++ b/native/Engine.cpp
+@@ -4,7 +4,11 @@
+  * and/or modify it under version 2 of the License, or (at your option), any later version.
+  */
+ 
++// ENGINE_SHADOW_V17_BEGIN include
+ #include "Engine.h"
++#include "EngineShadowObserverV17.h"
++#include "NativeShadowCollectorV18.h"
++// ENGINE_SHADOW_V17_END include
+ 
+ #include "Action.h"
+ #include "BotScenario.h"
+@@ -18,6 +22,7 @@
+ 
+ Engine::Engine(PlayerbotAI* botAI, AiObjectContext* factory) : PlayerbotAIAware(botAI), aiObjectContext(factory)
+ {
++    ShadowCollectorV18::RegisterEngine(this,botAI);
+     lastRelevance = 0.0f;
+     testMode = false;
+ }
+@@ -75,6 +80,7 @@
+ 
+ Engine::~Engine(void)
+ {
++    ShadowCollectorV18::ForgetEngine(this);
+     Reset();
+ 
+     // for (std::map<std::string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
+@@ -90,6 +96,7 @@
+ 
+ void Engine::Reset()
+ {
++    ShadowCollectorV18::ResetEngine(this);
+     strategyTypeMask = 0;
+     ActionNode* action = nullptr;
+     do
+@@ -184,19 +191,34 @@
+ 
+         Event event = basket->getEvent();
+         ActionNode* actionNode = queue.Pop();  // NOTE: Pop() deletes basket
++// ENGINE_SHADOW_V17_BEGIN queue_begin
++        EngineShadowV17::Decision shadow(botAI, this, EngineShadowV17::QueueDecision, minimal, depth, iterations);
++        shadow.SetInitialRelevance(relevance);
++        shadow.Observe(EngineShadowV17::SkipPrerequisites, skipPrerequisites);
++        if (shadow.Active()) shadow.SetActionFingerprint(actionNode->getName().c_str());
+         Action* action = InitializeAction(actionNode);
++        shadow.Observe(EngineShadowV17::ActionKnown, action != nullptr);
+ 
+         if (!action)
++// ENGINE_SHADOW_V17_END queue_begin
+         {
++// ENGINE_SHADOW_V17_BEGIN queue_unknown
++            shadow.SetOutcome(EngineShadowV17::Unknown);
+             LogAction("A:%s - UNKNOWN", actionNode->getName().c_str());
++// ENGINE_SHADOW_V17_END queue_unknown
+         }
+-        else if (action->isUseful())
++// ENGINE_SHADOW_V17_BEGIN queue_useful
++        else if (shadow.Observe(EngineShadowV17::Useful, action->isUseful()))
++// ENGINE_SHADOW_V17_END queue_useful
+         {
+             // Apply multipliers early to avoid unnecessary iterations
+             for (Multiplier* multiplier : multipliers)
+             {
+-                relevance *= multiplier->GetValue(action);
++// ENGINE_SHADOW_V17_BEGIN multiplier
++                relevance *= shadow.ObserveMultiplier(multiplier->GetValue(action));
+                 action->setRelevance(relevance);
++                shadow.MultiplierApplied(relevance);
++// ENGINE_SHADOW_V17_END multiplier
+ 
+                 if (relevance <= 0)
+                 {
+@@ -205,17 +227,26 @@
+                 }
+             }
+ 
+-            if (action->isPossible() && relevance > 0)
++// ENGINE_SHADOW_V17_BEGIN queue_possible
++            if (shadow.Observe(EngineShadowV17::Possible, action->isPossible()) &&
++                shadow.Observe(EngineShadowV17::RelevancePositive, relevance > 0))
++// ENGINE_SHADOW_V17_END queue_possible
+             {
+                 if (!skipPrerequisites)
+                 {
+                     LogAction("A:%s - PREREQ", action->getName().c_str());
+ 
+-                    if (MultiplyAndPush(actionNode->getPrerequisites(), relevance + 0.002f, false, event, "prereq"))
++// ENGINE_SHADOW_V17_BEGIN prerequisite
++                    if (shadow.Observe(EngineShadowV17::PrerequisitesPushed,
++                        MultiplyAndPush(actionNode->getPrerequisites(), relevance + 0.002f, false, event, "prereq")))
+                     {
+                         PushAgain(actionNode, relevance + 0.001f, event);
++                        shadow.SetOutcome(EngineShadowV17::PrerequisiteDeferred);
++                        shadow.SetFinalRelevance(relevance);
++                        shadow.Finish(botAI, this);
+                         continue;
+                     }
++// ENGINE_SHADOW_V17_END prerequisite
+                 }
+ 
+                 PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_ACTION, action->getName(), &aiObjectContext->performanceStack);
+@@ -229,31 +260,49 @@
+                     BotScenario::OnAction(botAI->GetBot(), action->getName().c_str(), "OK");
+                     MultiplyAndPush(actionNode->getContinuers(), relevance, false, event, "cont");
+                     lastRelevance = relevance;
++// ENGINE_SHADOW_V17_BEGIN queue_ok
+                     delete actionNode;  // Safe memory management
++                    shadow.SetOutcome(EngineShadowV17::EngineOk);
++                    shadow.SetFinalRelevance(relevance);
++                    shadow.Finish(botAI, this);
+                     break;
++// ENGINE_SHADOW_V17_END queue_ok
+                 }
+                 else
+                 {
++// ENGINE_SHADOW_V17_BEGIN queue_failed
++                    shadow.SetOutcome(EngineShadowV17::EngineFailed);
+                     LogAction("A:%s - FAILED", action->getName().c_str());
++// ENGINE_SHADOW_V17_END queue_failed
+                     BotScenario::OnAction(botAI->GetBot(), action->getName().c_str(), "FAILED");
+                     MultiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event, "alt");
+                 }
+             }
+             else
+             {
++// ENGINE_SHADOW_V17_BEGIN queue_impossible
++                shadow.SetOutcome(EngineShadowV17::Impossible);
+                 LogAction("A:%s - IMPOSSIBLE", action->getName().c_str());
++// ENGINE_SHADOW_V17_END queue_impossible
+                 BotScenario::OnAction(botAI->GetBot(), action->getName().c_str(), "IMPOSSIBLE");
+                 MultiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event, "alt");
+             }
+         }
+         else
+         {
++// ENGINE_SHADOW_V17_BEGIN queue_useless
++            shadow.SetOutcome(EngineShadowV17::Useless);
+             LogAction("A:%s - USELESS", action->getName().c_str());
++// ENGINE_SHADOW_V17_END queue_useless
+             BotScenario::OnAction(botAI->GetBot(), action->getName().c_str(), "USELESS");
+             lastRelevance = relevance;
+         }
+ 
++// ENGINE_SHADOW_V17_BEGIN queue_finish
+         delete actionNode;  // Always delete after processing the action node
++        shadow.SetFinalRelevance(relevance);
++        shadow.Finish(botAI, this);
++// ENGINE_SHADOW_V17_END queue_finish
+     }
+ 
+     if (time(nullptr) - currentTime > 1)
+@@ -325,18 +374,32 @@
+ ActionResult Engine::ExecuteAction(std::string const name, Event event, std::string const qualifier)
+ {
+     DurumuDutyV14::ObserveHumanControlEvent(botAI, event, name);
++// ENGINE_SHADOW_V17_BEGIN direct_begin
+     bool result = false;
++    EngineShadowV17::Decision shadow(botAI, this, EngineShadowV17::DirectDecision);
++    shadow.SetActionFingerprint(name.c_str());
++    shadow.Observe(EngineShadowV17::QualifierPresent, !qualifier.empty());
+ 
+     ActionNode* actionNode = CreateActionNode(name);
+     if (!actionNode)
++    {
++        shadow.SetOutcome(EngineShadowV17::Unknown);
++        shadow.Finish(botAI, this);
+         return ACTION_RESULT_UNKNOWN;
+-
++    }
++// ENGINE_SHADOW_V17_END direct_begin
++
++// ENGINE_SHADOW_V17_BEGIN direct_unknown
+     Action* action = InitializeAction(actionNode);
++    shadow.Observe(EngineShadowV17::ActionKnown, action != nullptr);
+     if (!action)
+     {
+         delete actionNode;
++        shadow.SetOutcome(EngineShadowV17::Unknown);
++        shadow.Finish(botAI, this);
+         return ACTION_RESULT_UNKNOWN;
+     }
++// ENGINE_SHADOW_V17_END direct_unknown
+ 
+     if (!qualifier.empty())
+     {
+@@ -344,17 +407,25 @@
+             q->Qualify(qualifier);
+     }
+ 
+-    if (!action->isPossible())
++// ENGINE_SHADOW_V17_BEGIN direct_possible
++    if (!shadow.Observe(EngineShadowV17::Possible, action->isPossible()))
+     {
+         delete actionNode;
++        shadow.SetOutcome(EngineShadowV17::Impossible);
++        shadow.Finish(botAI, this);
+         return ACTION_RESULT_IMPOSSIBLE;
+     }
+-
+-    if (!action->isUseful())
++// ENGINE_SHADOW_V17_END direct_possible
++
++// ENGINE_SHADOW_V17_BEGIN direct_useful
++    if (!shadow.Observe(EngineShadowV17::Useful, action->isUseful()))
+     {
+         delete actionNode;
++        shadow.SetOutcome(EngineShadowV17::Useless);
++        shadow.Finish(botAI, this);
+         return ACTION_RESULT_USELESS;
+     }
++// ENGINE_SHADOW_V17_END direct_useful
+ 
+     action->MakeVerbose();
+ 
+@@ -363,7 +434,11 @@
+ 
+     delete actionNode;
+ 
++// ENGINE_SHADOW_V17_BEGIN direct_finish
++    shadow.SetOutcome(result ? EngineShadowV17::EngineOk : EngineShadowV17::EngineFailed);
++    shadow.Finish(botAI, this);
+     return result ? ACTION_RESULT_OK : ACTION_RESULT_FAILED;
++// ENGINE_SHADOW_V17_END direct_finish
+ }
+ 
+ void Engine::addStrategy(std::string const name, bool init)
+@@ -591,12 +666,19 @@
+ bool Engine::ListenAndExecute(Action* action, Event event)
+ {
+     DurumuDutyV14::ObserveHumanControlEvent(botAI, event, action->getName());
++// ENGINE_SHADOW_V17_BEGIN listener_execution
+     bool actionExecuted = false;
+-
+-    if (actionExecutionListeners.Before(action, event))
+-    {
+-        actionExecuted = actionExecutionListeners.AllowExecution(action, event) ? action->Execute(event) : true;
+-    }
++    EngineShadowV17::Decision* const shadow = EngineShadowV17::CurrentDecision();
++    EngineShadowV17::Mark(shadow, EngineShadowV17::ExecuteCalled, false);
++
++    if (EngineShadowV17::Observe(shadow, EngineShadowV17::BeforeAllowed, actionExecutionListeners.Before(action, event)))
++    {
++        actionExecuted = EngineShadowV17::Observe(shadow, EngineShadowV17::ExecutionAllowed,
++            actionExecutionListeners.AllowExecution(action, event)) ?
++            (EngineShadowV17::Mark(shadow, EngineShadowV17::ExecuteCalled, true),
++             EngineShadowV17::Observe(shadow, EngineShadowV17::ExecuteReturned, action->Execute(event))) : true;
++    }
++// ENGINE_SHADOW_V17_END listener_execution
+ 
+     if (botAI->HasStrategy("debug", BOT_STATE_NON_COMBAT))
+     {
+@@ -617,8 +699,12 @@
+         botAI->TellMasterNoFacing(out);
+     }
+ 
+-    actionExecuted = actionExecutionListeners.OverrideResult(action, actionExecuted, event);
++// ENGINE_SHADOW_V17_BEGIN listener_final
++    actionExecuted = EngineShadowV17::Observe(shadow, EngineShadowV17::ListenerFinalReturned,
++        actionExecutionListeners.OverrideResult(action, actionExecuted, event));
+     actionExecutionListeners.After(action, actionExecuted, event);
++    EngineShadowV17::Mark(shadow, EngineShadowV17::AfterCompleted, true);
++// ENGINE_SHADOW_V17_END listener_final
+     return actionExecuted;
+ }
+ 
+--- a/native/PlayerbotAI.cpp
++++ b/native/PlayerbotAI.cpp
+@@ -1,4 +1,7 @@
+ #include "DurumuDuty.h"
++#include "NativeShadowCollectorV18.h"
++#include "ResponseBindingV18.h"
++#include "NativeBackgroundTraining.h"
+ /*
+ * This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
+ *
+@@ -343,6 +346,7 @@
+     chatFilter(this),
+     security(nullptr)
+ {
++    ShadowCollectorV18::RegisterActor(this,bot);
+     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
+         _engines[i] = nullptr;
+ 
+@@ -351,6 +355,8 @@
+         _allowActiveCheckTimer[i] = 0;  // #72: AC PlayerbotAI.cpp:231/250 (AllowActivity is ms-based now)
+         _allowActive[i] = false;
+     }
++    ResponseBindingV18::RegisterActor(this);
++    NativeBackgroundTraining::OnAiCreated(bot);
+ }
+ 
+ PlayerbotAI::PlayerbotAI(Player* bot)
+@@ -366,6 +372,7 @@
+     chatFilter(this),
+     security(bot)
+ {
++    ShadowCollectorV18::RegisterActor(this,bot);
+     // AC PlayerbotAI.cpp:240-241
+     if (!bot->isTaxiCheater() && HasConfiguredTaxiCheat())
+         bot->SetTaxiCheater(true);
+@@ -502,12 +509,17 @@
+     // (AC :302-303) and never fire; they are left out here the same way.
+     botOutgoingPacketHandlers.AddHandler(SMSG_GUILD_INVITE, "guild invite");
+     botOutgoingPacketHandlers.AddHandler(SMSG_PETITION_SHOW_SIGNATURES, "petition offer");
++    ResponseBindingV18::RegisterActor(this);
++    NativeBackgroundTraining::OnAiCreated(bot);
+ }
+ 
+ std::set<std::string> PlayerbotAI::unsecuredCommands;
+ 
+ PlayerbotAI::~PlayerbotAI()
+ {
++    NativeBackgroundTraining::OnAiDestroyed(bot);
++    ResponseBindingV18::ForgetActor(this);
++    ShadowCollectorV18::ForgetActor(this);
+     ForgetMagePortalRequests(this);
+     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
+     {
+@@ -1709,6 +1721,7 @@
+ 
+ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal)
+ {
++    ShadowCollectorV18::NativeTick shadowNativeTick(this);
+     if (bot->IsBeingTeleported() || !bot->IsInWorld())
+         return;
+ 
+@@ -2149,6 +2162,7 @@
+ 
+ void PlayerbotAI::Reset(bool full)
+ {
++    ShadowCollectorV18::ResetActor(this);
+     if (bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
+         return;
+ 
+@@ -4038,6 +4052,7 @@
+ 
+ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
+ {
++    ResponseBindingV18::NativeCallFrame shadowResponse(this, spellId, target, itemTarget);
+     if (!spellId)
+     {
+         return false;
+@@ -4235,6 +4250,7 @@
+         delete spell;
+         return false;
+     }
++    shadowResponse.SubmitBeforePrepare(spell, targets.GetUnitTarget());
+     spell->prepare(&targets);
+     SpellCastResult result = spell->GetCastResult();
+     BotScenario::OnCast(bot, spellId, int(result));
+--- a/native/MechanicActionAuthority.cpp
++++ b/native/MechanicActionAuthority.cpp
+@@ -1,3 +1,6 @@
++#include "NativeShadowCollectorV18.h"
++#include "ResponseBindingV18.h"
++#include <algorithm>
+ #include "../cast-receipts-v15/CastReceipts.h"
+ #include "../cast-receipts-v15/NativeCastSourceResolver.h"
+ #include "../../ThroneSiegeAudit/durumu-duty-v14/DurumuDuty.h"
+@@ -81,12 +84,62 @@
+  }
+ };
+ }
++// Read-only observation adapter; the existing action authority remains separate.
++bool ReadShadowFactsV18(PlayerbotAI* ai,ShadowCollectorV18::NativeFacts& out) noexcept {
++ try {
++  Player* p=nullptr;
++  if(!sConfigMgr->GetBoolDefault("RaidAI.ShadowCollectorV18.Enabled",false)||!Actor(ai,p))return false;
++  auto m=p->GetMap();auto g=p->GetGroup();
++  if(!m||!m->ToInstanceMap()||!m->GetInstanceId()||!g||!g->GetMembersCount()||g->GetMembersCount()>10)return false;
++  bool dungeon=m->IsDungeon()&&!m->IsRaid();
++  if(dungeon) {if(g->isRaidGroup()||g->GetMembersCount()>5)return false;}
++  else if(!Enabled()||m->GetSpawnMode()!=3||!g->isRaidGroup())return false;
++  ShadowCollectorV18::NativeFacts f={};
++  f.kind=dungeon?EngineShadowV17::DungeonMapSession:EngineShadowV17::SupportedRaidEncounter;
++  // Enumerate only the owning map's native player list. Never resolve or
++  // dereference another map's member through a global player accessor.
++  unsigned scanned=0;
++  for(auto const& ref:m->GetPlayers()) {
++   if(++scanned>64)return false;
++   auto member=ref.GetSource();if(!member||member->GetGroup()!=g)continue;
++   auto memberAI=GET_PLAYERBOT_AI(member);
++   if(f.memberCount>=10||!member->GetSession()||!member->GetSession()->IsBot()||
++      member->GetSession()->isLogingOut()||!memberAI||memberAI->IsRealPlayer()||
++      memberAI->GetBot()!=member||!member->IsInWorld()||member->IsDuringRemoveFromWorld()||
++      member->IsBeingTeleported()||member->IsCharmed()||member->GetMap()!=m)return false;
++   f.members[f.memberCount++]=member->GetGUID().GetRawValue();
++  }
++  // Includes all native group slots: absent/offline/other-map members fail closed.
++  if(f.memberCount!=g->GetMembersCount())return false;
++  std::sort(f.members.begin(),f.members.begin()+f.memberCount);
++  auto instance=m->ToInstanceMap()?m->ToInstanceMap()->GetInstanceScript():nullptr;if(!dungeon&&!instance)return false;
++  std::uint64_t epoch=0;
++  if(!dungeon)for(auto const& spec:ActionSpecs) {
++   if(spec.map!=m->GetId()||instance->GetBossState(spec.slot)!=IN_PROGRESS)continue;
++   auto root=m->GetCreature(instance->GetGuidData(spec.key));Binding binding;
++   // Preserve CurrentEpoch's native map/root/encounter/phase/visibility checks.
++   if(!root||!Bind(m,root,binding)||!root->IsInWorld()||root->IsDuringRemoveFromWorld()||
++      !root->IsAlive()||root->IsInEvadeMode()||!p->InSamePhase(root)||!p->CanSeeOrDetect(root,false,true))return false;
++   auto roots=Roots(m,binding);
++   std::unique_lock<std::mutex> lock(bookMutex,std::try_to_lock);if(!lock.owns_lock())return false;
++   auto key=Key(m,binding.slot);if(!book.SameRoots(key,roots))return false;
++   epoch=book.Encounter(key);break;
++  }
++  if(!dungeon&&!epoch)return false; // dungeon epoch stays explicitly unknown (zero)
++  f.ai=reinterpret_cast<std::uintptr_t>(ai);f.actorAddress=reinterpret_cast<std::uintptr_t>(p);
++  f.sessionAddress=reinterpret_cast<std::uintptr_t>(p->GetSession());f.groupAddress=reinterpret_cast<std::uintptr_t>(g);
++  f.mapAddress=reinterpret_cast<std::uintptr_t>(m);f.actor=p->GetGUID().GetRawValue();f.group=g->GetGUID().GetRawValue();
++  f.groupLeader=g->GetLeaderGUID().GetRawValue();f.epoch=epoch;f.map=m->GetId();f.instance=m->GetInstanceId();out=f;return true;
++ }catch(...){return false;}
++}
++
+ std::uint64_t EncounterEpoch(Creature*root){if(!Enabled()||!root||!root->IsInWorld()||root->IsDuringRemoveFromWorld()||!root->IsAlive()||root->IsInEvadeMode())return 0;auto m=root->GetMap();Binding b;if(!m||!m->GetInstanceId()||m->GetSpawnMode()!=3||!Bind(m,root,b))return 0;auto roots=Roots(m,b);std::lock_guard<std::mutex> lock(bookMutex);auto k=Key(m,b.slot);return book.SameRoots(k,roots)?book.Encounter(k):0;}
+ std::uint64_t CurrentEpoch(PlayerbotAI*ai,Creature*root){
+ Player*p=nullptr;if(!Enabled()||!Actor(ai,p)||!root)return 0;auto m=p->GetMap();auto g=p->GetGroup();Binding b;
+ if(!m||!m->GetInstanceId()||m->GetSpawnMode()!=3||!g||!g->isRaidGroup()||g->GetMembersCount()>10||!Bind(m,root,b)||!root->IsInWorld()||root->IsDuringRemoveFromWorld()||!root->IsAlive()||root->IsInEvadeMode()||!p->InSamePhase(root)||!p->CanSeeOrDetect(root,false,true))return 0;
+-auto roots=Roots(m,b);std::uint64_t epoch=0;std::vector<std::uint64_t> witnesses;{std::lock_guard<std::mutex> lock(bookMutex);if(!book.SameRoots(Key(m,b.slot),roots))return 0;epoch=book.Epoch(Key(m,b.slot),g->GetGUID().GetRawValue());witnesses=book.Humans(Key(m,b.slot),g->GetGUID().GetRawValue());}
+-if(!epoch)return 0;for(auto raw:witnesses){auto h=m->GetPlayer(ObjectGuid(raw));if(Human(h,p)&&h->InSamePhase(root)&&h->CanSeeOrDetect(root,false,true))return epoch;}return 0;
++auto roots=Roots(m,b);std::lock_guard<std::mutex> lock(bookMutex);auto k=Key(m,b.slot);
++// Native lifecycle epoch remains authoritative; human witnesses are observational only.
++return book.SameRoots(k,roots)?book.Encounter(k):0;
+ }
+ std::uint64_t Epoch(PlayerbotAI*ai,Creature*root){return callbackAI==ai&&ai?CurrentEpoch(ai,root):0;}
+ bool Authorized(PlayerbotAI*ai,Creature*root){return Epoch(ai,root)!=0;}
+@@ -101,19 +154,13 @@
+  auto m=p->GetMap();auto g=p->GetGroup();if(!m||m->GetId()!=1008||m->GetSpawnMode()!=3||!g)return false;
+  auto root=m->GetCreature(ObjectGuid(e.stamp[MoguGarajalV5::RootGuid]));Binding b;
+  if(!root||root->GetEntry()!=60143||!Bind(m,root,b)||b.slot!=2||!root->IsInWorld()||root->IsDuringRemoveFromWorld()||!root->IsAlive()||root->IsInEvadeMode())return false;
+- auto roots=Roots(m,b);std::vector<std::uint64_t> witnesses;std::uint64_t currentEpoch=0;
+- {std::lock_guard<std::mutex>guard(bookMutex);auto k=Key(m,b.slot);currentEpoch=book.Epoch(k,g->GetGUID().GetRawValue());if(!book.SameRoots(k,roots)||currentEpoch!=e.stamp[MoguGarajalV5::Epoch])return false;witnesses=book.Humans(k,g->GetGUID().GetRawValue());}
+- bool human=false;
+- for(auto raw:witnesses){auto h=m->GetPlayer(ObjectGuid(raw));
+-  // Unlike ordinary Human(), the witnessed human remains in the material world.
+-  // All other live/session/group/visibility conditions remain required.
+-  if(h&&h->GetSession()&&!h->GetSession()->IsBot()&&!h->GetSession()->isLogingOut()&&h->IsInWorld()&&!h->IsDuringRemoveFromWorld()&&h->IsAlive()&&h->IsInCombat()&&!h->IsCharmed()&&!h->IsBeingTeleported()&&h->GetGroup()==g&&h->GetMap()==m&&h->InSamePhase(root)&&h->CanSeeOrDetect(root,false,true)){human=true;break;}
+- }
+- if(!SameReturnCapability(token,e.token,currentEpoch,e.stamp[MoguGarajalV5::Epoch],callbackAI==ai,issued,human)||!MoguGarajalV5::ConsumeConfirmedReceipt(ai,token))return false;
++ auto roots=Roots(m,b);std::uint64_t currentEpoch=0;
++ {std::lock_guard<std::mutex>guard(bookMutex);auto k=Key(m,b.slot);currentEpoch=book.Encounter(k);if(!book.SameRoots(k,roots)||currentEpoch!=e.stamp[MoguGarajalV5::Epoch])return false;}
++ if(!SameReturnCapability(token,e.token,currentEpoch,e.stamp[MoguGarajalV5::Epoch],callbackAI==ai,issued)||!MoguGarajalV5::ConsumeConfirmedReceipt(ai,token))return false;
+  issued=true;return true;
+ }
+ void OnEncounterState(InstanceMap*m,unsigned slot,unsigned state,bool loading){
+-if(!m)return;CastReceiptsV15::MapUnloaded(reinterpret_cast<std::uintptr_t>(m));auto spec=FindActionSlot(m->GetId(),slot);if(!spec)return;auto roots=Roots(m,*spec);
++if(!m)return;ShadowCollectorV18::MapStateChanged(reinterpret_cast<std::uintptr_t>(m));ResponseBindingV18::ForgetMap(reinterpret_cast<std::uintptr_t>(m));CastReceiptsV15::MapUnloaded(reinterpret_cast<std::uintptr_t>(m));auto spec=FindActionSlot(m->GetId(),slot);if(!spec)return;ShadowCollectorV18::EncounterChanged(reinterpret_cast<std::uintptr_t>(m));auto roots=Roots(m,*spec);
+ {std::lock_guard<std::mutex> lock(bookMutex);auto k=Key(m,slot);book.End(k);if(!loading&&Enabled()&&m->GetSpawnMode()==3&&state==IN_PROGRESS&&HasExpectedRoots(*spec,roots))book.Begin(k,roots);}
+ if(m->GetId()==1098&&slot==9)IronQonRescueV11::ForgetMap(m);
+ if(m->GetId()==1136&&slot==6)DarkShamansV12::ForgetMap(m);
+@@ -128,9 +175,9 @@
+ if(m->GetId()==1136&&slot==3){PrisonDutyV8::ForgetPrisonMap(m);PrisonDutyV8::ForgetPrisonDuties(m);}
+ // Keep other owned-action receipts until their next actor callback retires them.
+ }
+-void ForgetMap(InstanceMap*m){if(!m)return;CastReceiptsV15::MapUnloaded(reinterpret_cast<std::uintptr_t>(m));DurumuDutyV14::ForgetDutyMap(m);{std::lock_guard<std::mutex> lock(bookMutex);book.ClearMap(reinterpret_cast<std::uintptr_t>(m));}ForgetMechanicMap(m);}
+-void OnRootRemoved(Map*m,Creature*r){if(!m||!r)return;CastReceiptsV15::EncounterRetired(reinterpret_cast<std::uintptr_t>(m),r->GetGUID().GetRawValue());{std::lock_guard<std::mutex>lock(bookMutex);book.RootRemoved(reinterpret_cast<std::uintptr_t>(m),r->GetGUID().GetRawValue(),reinterpret_cast<std::uintptr_t>(r));}ForgetMechanicTarget(m,r);}
+-void RegisterHumanWitnessHook(){if(sConfigMgr->GetBoolDefault("RaidAI.CastReceiptsV15",false))CastReceiptsV15::SetResolver(CastReceiptsV15::ResolveSupportedCast);new HumanWitness();}
++void ForgetMap(InstanceMap*m){if(!m)return;ShadowCollectorV18::ForgetMap(reinterpret_cast<std::uintptr_t>(m));ResponseBindingV18::ForgetMap(reinterpret_cast<std::uintptr_t>(m));CastReceiptsV15::MapUnloaded(reinterpret_cast<std::uintptr_t>(m));DurumuDutyV14::ForgetDutyMap(m);{std::lock_guard<std::mutex> lock(bookMutex);book.ClearMap(reinterpret_cast<std::uintptr_t>(m));}ForgetMechanicMap(m);}
++void OnRootRemoved(Map*m,Creature*r){if(!m||!r)return;ShadowCollectorV18::RootRemoved(reinterpret_cast<std::uintptr_t>(m));ResponseBindingV18::ForgetRoot(reinterpret_cast<std::uintptr_t>(m),r->GetGUID().GetRawValue());CastReceiptsV15::EncounterRetired(reinterpret_cast<std::uintptr_t>(m),r->GetGUID().GetRawValue());{std::lock_guard<std::mutex>lock(bookMutex);book.RootRemoved(reinterpret_cast<std::uintptr_t>(m),r->GetGUID().GetRawValue(),reinterpret_cast<std::uintptr_t>(r));}ForgetMechanicTarget(m,r);}
++void RegisterHumanWitnessHook(){ShadowCollectorV18::RegisterCollectorHook();if(sConfigMgr->GetBoolDefault("RaidAI.CastReceiptsV15",false))CastReceiptsV15::SetResolver(CastReceiptsV15::ResolveSupportedCast);new HumanWitness();}
+ void RunMechanicActions(PlayerbotAI*ai){if(!ai||callbackAI)return;
+ struct Scope{Scope(PlayerbotAI*a){callbackAI=a;issued=false;}~Scope(){callbackAI=nullptr;issued=false;}} scope(ai);
+ // Native actor callback, never from a timer/worker. Dispatch releases invalid owned
+--- a/native/Spell.cpp
++++ b/native/Spell.cpp
+@@ -1,3 +1,4 @@
++#include "InterruptObserver.h"
+ #include "CastReceipts.h"
+ /*
+ * This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
+@@ -676,6 +677,7 @@
+ 
+ Spell::~Spell()
+ {
++    InterruptObserverV17::Ended(this); // cleanup only; never an outcome
+     CastReceiptsV15::Ended(this);
+     // unload scripts
+     while (!m_loadedScripts.empty())
+@@ -3439,6 +3441,7 @@
+ 
+ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggeredByAura)
+ {
++    InterruptObserverV17::PrepareEntered(this); // excludes standalone CheckCast probes
+     if (m_CastItem)
+         m_castItemGUID = m_CastItem->GetGUID();
+     else
+--- a/native/Unit.cpp
++++ b/native/Unit.cpp
+@@ -1,3 +1,4 @@
++#include "InterruptObserver.h"
+ #include "CastReceipts.h"
+ /*
+ * This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
+@@ -3638,6 +3639,7 @@
+ 
+ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool withInstant)
+ {
++    InterruptObserverV17::NativeInterruptFrame interruptObservationFrame;
+     //TC_LOG_DEBUG("entities.unit", "Interrupt spell for unit %u.", GetEntry());
+     Spell* spell = m_currentSpells [spellType];
+     if (spell
+@@ -3657,7 +3659,11 @@
+             ToCreature()->AI()->CastInterrupted(spell->GetSpellInfo());
+ 
+         if (spell->getState() != SPELL_STATE_FINISHED)
++        {
++            auto cancelReceipt = InterruptObserverV17::BeforeNativeCancel(this, spell, unsigned(spellType));
+             spell->cancel();
++            InterruptObserverV17::AfterNativeCancel(cancelReceipt, this, unsigned(spellType));
++        }
+         else
+         {
+             m_currentSpells[spellType] = nullptr;
+--- a/native/SpellEffects.cpp
++++ b/native/SpellEffects.cpp
+@@ -1,3 +1,4 @@
++#include "InterruptObserver.h"
+ /*
+ * This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
+ *
+@@ -3886,8 +3887,10 @@
+                     effectiveLockoutDuration = unitTarget->ModSpellDuration(m_spellInfo, unitTarget, duration, false, 1 << effIndex);
+                     unitTarget->ProhibitSpellSchool(curSpellInfo->GetSchoolMask(), effectiveLockoutDuration);
+                 }
++                InterruptObserverV17::EffectScope interruptObservation(this, unitTarget, spell, i);
+                 ExecuteLogEffectInterruptCast(effIndex, unitTarget, curSpellInfo->Id);
+                 unitTarget->InterruptSpell(CurrentSpellTypes(i), false);
++                interruptObservation.Complete(); // evidence only; never changes spell outcome
+ 
+                 m_successfulInterrupt = true;
+ 
+--- a/native/CastReceipts.cpp
++++ b/native/CastReceipts.cpp
+@@ -1,4 +1,5 @@
+ #include "CastReceipts.h"
++#include "ResponseBindingV18.h"
+ #include "Unit.h"
+ #include "Creature.h"
+ #include "Spell.h"
+@@ -20,7 +21,7 @@
+ }}
+ void SetResolver(Resolver r){std::lock_guard<std::recursive_mutex> lock(mutex);book.Clear();resolver=r;resolverBound.store(r!=nullptr);}
+ void Installed(Unit* unit,Spell* spell){if(!resolverBound.load())return;std::lock_guard<std::recursive_mutex> lock(mutex);Identity id;if(Scope(unit,spell,id))book.Install(id,reinterpret_cast<std::uintptr_t>(spell));else book.End(reinterpret_cast<std::uintptr_t>(spell));}
+-void Ended(Spell* spell){if(!resolverBound.load())return;std::lock_guard<std::recursive_mutex> lock(mutex);book.End(reinterpret_cast<std::uintptr_t>(spell));}
++void Ended(Spell* spell){ResponseBindingV18::SourceEnded(spell);if(!resolverBound.load())return;std::lock_guard<std::recursive_mutex> lock(mutex);book.End(reinterpret_cast<std::uintptr_t>(spell));}
+ std::uint64_t Current(Unit* unit,unsigned slot){std::lock_guard<std::recursive_mutex> lock(mutex);if(!unit||(slot!=CURRENT_GENERIC_SPELL&&slot!=CURRENT_CHANNELED_SPELL))return 0;Spell* spell=unit->GetCurrentSpell(CurrentSpellTypes(slot));Identity id;if(!Scope(unit,spell,id))return 0;return book.Read(id,reinterpret_cast<std::uintptr_t>(spell));}
+ void MapUnloaded(std::uintptr_t map){std::lock_guard<std::recursive_mutex> lock(mutex);book.RetireMap(map);}
+ void EncounterRetired(std::uintptr_t map,std::uint64_t root){std::lock_guard<std::recursive_mutex> lock(mutex);book.RetireRoot(map,root);}
+--- a/native/DualInterrupt.coordinated.cpp
++++ b/native/DualInterrupt.coordinated.cpp
+@@ -1,3 +1,4 @@
++#include "ResponseBindingV18.h"
+ #include "WarshamanWindow.h"
+ #include "Config.h"
+ #include <chrono>
+@@ -107,6 +108,7 @@
+   auto guid=t->GetGUID();if(Root(ai,spec)!=b||!MopRaidActions::Authorized(ai,b)||MopRaidActions::Epoch(ai,b)!=e||!p->GetGroup()||p->GetGroup()->GetGUID()!=group||p->GetRoleForGroup()!=role||p->GetMap()->GetCreature(guid)!=t||!VisibleSummon(p,b,t,spec)||!InterruptibleHeal(t,spec)||!Ready(ai,t,id)||(spec.stance&&(!SameCast(t,castView)||WindowOwner(p,ai)!=wo))){release();out.state=State::Invalidated;return out;}
+   if(!MopRaidActions::ClaimAction(ai,b)){release();out.state=State::Claimed;return out;}
+   if(spec.stance){std::lock_guard<std::mutex>g(windowMutex);if(!sharedWindows.Submit(wk,wo,reservation,ClockMs())){sharedWindows.Release(wk,wo,reservation);out.state=State::Invalidated;return out;}}
++  ResponseBindingV18::NativeClaimScope shadowResponse(ai,b,t,id); // observational; native coordination/latch/result remain authoritative
+   out.target=guid.GetRawValue();out.spell=id;out.state=ai->CastSpell(id,t)?State::CommandAccepted:State::NativeRejected;
+   return out; // accepted != interrupted; retain latch for rejected/uncertain call
+  }
+--- a/native/mod_playerbots.cpp
++++ b/native/mod_playerbots.cpp
+@@ -1,3 +1,5 @@
++#include "NativeBackgroundTraining.h"
++#include "NativeShadowCollectorV18.h"
+ #include "../../ThroneSiegeAudit/twins-nightmare-v10/TwinsNightmare.h"
+ #include "../../ThroneSiegeAudit/jinrokh-taunt-v9/JinrokhTaunt.h"
+ #include "../../ThroneSiegeAudit/prison-duty-v8/PrisonDuty.h"
+@@ -107,6 +109,7 @@
+     }
+     void OnStartup() override
+     {
++        NativeBackgroundTraining::Startup();
+         // Runs after World::SetInitialWorldSettings, so DBCs, ObjectMgr and MapMgr are all up.
+         //
+         // sTravelMgr.Init() is the counterpart of upstream AC's TravelMgr::Init(): it builds the
+@@ -131,10 +134,13 @@
+             sTravelNodeMap.LoadOrGenerate();
+     }
+ 
++    void OnShutdown() override { NativeBackgroundTraining::Shutdown(); }
++
+     void OnUpdate(uint32 diff) override
+     {
+         // AC Script/Playerbots.cpp:466-468: run the operations bot AI queued from the map-update threads
+         // (world thread, after sMapMgr->Update).
++        NativeBackgroundTraining::WorldUpdate(diff);
+         PlayerbotWorldThreadProcessor::instance().Update(diff);
+         // #148: AC RandomBotLevelMgr.cpp:1126-1129 (replaces the fork-only RandomPlayerbotBracketMgr, broken since #808).
+         RandomBotLevelMgrUpdate(diff);
+@@ -259,6 +265,8 @@
+ 
+     void OnPlayerbotLogout(Player* player) override
+     {
++        if (player) if (auto ai = GET_PLAYERBOT_AI(player)) ShadowCollectorV18::ResetActor(ai);
++        NativeBackgroundTraining::OnAiDestroyed(player);
+         if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))
+         {
+             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+@@ -310,13 +318,14 @@
+ {
+ public:
+     PlayerbotsPlayerScript() : PlayerScript("PlayerbotsPlayerScript") {}
+-    void OnLogout(Player* p) override { if(p) { TwinsNightmareV10::ForgetPlayer(p); JinrokhTauntV9::ForgetTank(p); HeartTerraceActions::ForgetHeartActor(p->GetGUID().GetRawValue()); PrisonDutyV8::ForgetPrisonActor(reinterpret_cast<uintptr_t>(p),p->GetGUID().GetRawValue()); } }
++    void OnLogout(Player* p) override { if(p) { if (auto ai = GET_PLAYERBOT_AI(p)) ShadowCollectorV18::ResetActor(ai); NativeBackgroundTraining::OnAiDestroyed(p); TwinsNightmareV10::ForgetPlayer(p); JinrokhTauntV9::ForgetTank(p); HeartTerraceActions::ForgetHeartActor(p->GetGUID().GetRawValue()); PrisonDutyV8::ForgetPrisonActor(reinterpret_cast<uintptr_t>(p),p->GetGUID().GetRawValue()); } }
+ 
+     // #148: AC RandomBotLevelMgr.cpp:1151-1156 (ResetBotLevel on level-up).
+     void OnLevelChanged(Player* player, uint8 oldLevel) override { RandomBotLevelMgrOnLevelChanged(player, oldLevel); }
+ 
+     void OnLogin(Player* player) override
+     {
++        if (player) if (auto ai = GET_PLAYERBOT_AI(player)) { ShadowCollectorV18::ResetActor(ai); NativeBackgroundTraining::OnAiCreated(player); }
+         TwinsNightmareV10::ForgetPlayer(player); JinrokhTauntV9::ForgetTank(player); HeartTerraceActions::ForgetHeartActor(player->GetGUID().GetRawValue()); PrisonDutyV8::ForgetPrisonActor(reinterpret_cast<uintptr_t>(player),player->GetGUID().GetRawValue());
+         if (!player->GetSession()->IsBot())
+         {
+@@ -432,6 +441,7 @@
+         {
+             playerbotMgr->UpdateAI(diff);
+         }
++        NativeBackgroundTraining::ObservePlayer(player);
+     }
+ };
+ void AddSC_mod_playerbots()
