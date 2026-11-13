@@ -3,7 +3,8 @@ param(
   [Parameter(Mandatory=$true)][string]$PlanPath,
   [Parameter(Mandatory=$true)][string]$SourceRoot,
   [Parameter(Mandatory=$true)][string]$OutputRoot,
-  [switch]$Compile
+  [switch]$Compile,
+  [string[]]$OnlyJob = @()
 )
 # Compile reviewed text sources with the actual V15 response flags. No link,
 # deployment, service, database, download, Python or source overwrite occurs.
@@ -14,6 +15,10 @@ function CheckedPath([string]$p) {
   return [IO.Path]::GetFullPath($p)
 }
 function Hash([string]$p) { return (Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() }
+function TextHash([string]$s) {
+  $sha=[Security.Cryptography.SHA256]::Create()
+  try { return ([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($s)))).Replace('-','').ToLowerInvariant() } finally { $sha.Dispose() }
+}
 function RequireHash([string]$p,[string]$expected) {
   if (!(Test-Path -LiteralPath $p -PathType Leaf)) { throw "Missing input: $p" }
   if ((Hash $p) -ne $expected.ToLowerInvariant()) { throw "Input changed: $p" }
@@ -82,12 +87,36 @@ foreach ($job in $plan.jobs) {
     response=(($includes -join "`r`n")+"`r`n"+$flags+"`r`n"+'-Fd"'+$pdb+'"'+"`r`n")}
 
 }
-if (!$Compile) { Write-Output "Validated $($prepared.Count) compile jobs; no files were written and nothing was compiled.";return }
+$selected=@($prepared)
+if ($OnlyJob.Count) {
+  foreach ($name in $OnlyJob) { if (!$seen.ContainsKey($name)) { throw "Unknown requested job: $name" } }
+  $selected=@($prepared | Where-Object { $OnlyJob -contains $_.name })
+}
+if (!$Compile) { Write-Output "Validated $($prepared.Count) compile jobs; selected $($selected.Count); no files were written and nothing was compiled.";return }
 [IO.Directory]::CreateDirectory($OutputRoot)|Out-Null
 $utf8=New-Object Text.UTF8Encoding($false)
 $results=@()
-try {
+if ($OnlyJob.Count) {
+  $priorPath=Join-Path $OutputRoot 'compile-results.json'
+  if (!(Test-Path -LiteralPath $priorPath -PathType Leaf)) { throw 'Selective resume needs the existing actual compiler receipt.' }
+  $prior=Get-Content -LiteralPath $priorPath -Raw | ConvertFrom-Json
+  if ($prior.schema -ne 'native-shadow-compile-receipt-v1' -or !$prior.formal_unchanged) { throw 'Prior native receipt is invalid.' }
   foreach ($job in $prepared) {
+    if ($OnlyJob -contains $job.name) { continue }
+    $entry=@($prior.jobs | Where-Object { $_.name -eq $job.name })
+    if ($entry.Count -ne 1 -or !$entry[0].compiled -or $entry[0].exit -ne 0) { throw "No successful prior native result: $($job.name)" }
+    $e=$entry[0]
+    RequireHash $job.source $e.source_sha256
+    RequireHash $job.object $e.object_sha256
+    $expectedRsp=TextHash $job.response
+    RequireHash (Join-Path $OutputRoot ($job.name+'.rsp')) $expectedRsp
+    $results += [pscustomobject]@{name=$job.name;exit=0;compiled=$true;reused=$true;seconds=$e.seconds;
+      source_sha256=$e.source_sha256;object_sha256=$e.object_sha256;response_sha256=$expectedRsp;
+      response=(Join-Path $OutputRoot ($job.name+'.rsp'));log=$e.log}
+  }
+}
+try {
+  foreach ($job in $selected) {
     $rspOut=Join-Path $OutputRoot ($job.name+'.rsp')
     $cmdOut=Join-Path $OutputRoot ($job.name+'.cmd')
     $logOut=Join-Path $OutputRoot ($job.name+'.log')
@@ -102,13 +131,15 @@ try {
     $code=$LASTEXITCODE;$watch.Stop()
     $ok=$code -eq 0 -and (Test-Path -LiteralPath $job.object -PathType Leaf)
     $results += [pscustomobject]@{name=$job.name;exit=$code;compiled=$ok;seconds=$watch.Elapsed.TotalSeconds;
-      source_sha256=(Hash $job.source);object_sha256=$(if($ok){Hash $job.object}else{$null});log=$logOut}
+      source_sha256=(Hash $job.source);object_sha256=$(if($ok){Hash $job.object}else{$null});response_sha256=(Hash $rspOut);response=$rspOut;reused=$false;log=$logOut}
     if (!$ok) { throw "Compile failed: $($job.name). Inspect $logOut" }
   }
 } finally {
   $unchanged=(Hash $formal) -eq $plan.formal_sha256.ToLowerInvariant()
   $receipt=[pscustomobject]@{schema='native-shadow-compile-receipt-v1';
-    jobs=$results;formal_unchanged=$unchanged;linked=$false;deployed=$false;server_started=$false;
+    jobs=$results;complete=($results.Count -eq $prepared.Count -and @($results | Where-Object { !$_.compiled }).Count -eq 0);
+    plan_sha256=(Hash $PlanPath);source_root=$SourceRoot;output_root=$OutputRoot;selected_jobs=@($selected | ForEach-Object { $_.name });
+    formal_unchanged=$unchanged;linked=$false;deployed=$false;server_started=$false;
     runtime_collection_verified=$false;model_activated=$false}
   [IO.File]::WriteAllText((Join-Path $OutputRoot 'compile-results.json'),($receipt|ConvertTo-Json -Depth 10),$utf8)
   if (!$unchanged) { throw 'Formal EXE changed during compile; coordinate with its owner before continuing.' }

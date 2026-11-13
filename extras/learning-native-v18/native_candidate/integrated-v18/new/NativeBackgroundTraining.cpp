@@ -1,4 +1,8 @@
 // GPL-2.0-or-later. See INTEGRATION.md for ownership, verified call sites and gaps.
+// Complete native type declaration before the legacy condition-header include chain.
+class Creature;
+// Pin only this verified holder API; do not replace the whole Manager include tree.
+#include "../native-api/PlayerbotMgr.h"
 #include "NativeBackgroundTraining.h"
 #include "NativeTrainingRoster.h"
 #include "deps/BackgroundTrainingQueue.h"

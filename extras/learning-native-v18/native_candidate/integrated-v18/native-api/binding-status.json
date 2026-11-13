@@ -1,0 +1,15 @@
+{
+  "schema": "native-v18-holder-header-binding-v1",
+  "helper_before_sha256": "c0bd50280300df7bb768eefdfb9e9ad971b900a6e0c1f88376ec1330a3516249",
+  "helper_after_sha256": "39e90fe72ccf032374c70e1db681b6ada46b0d09d23566e1297d8abd0f164dba",
+  "header_sha256": "49050bb78713278eee9b0f2513b3b2ba7cf7c37c4852b1ed3835faf35aa79a5a",
+  "header_origin": "E:\\WRL-1112v1\\D\\WOW\\RaidAI-Dev\\BuildSources\\prod0d107-raid-utf8-5c4d3725e00b\\modules\\mod_playerbots\\src\\Manager\\PlayerbotMgr.h",
+  "header_origin_cpp_sha256": "263feddd092098d84dfdfae429cbde4bf94f1c5731f51fb510363a806c1d3460",
+  "original_ownership_checks_retained": true,
+  "creature_native_forward_declaration": true,
+  "whole_manager_directory_override": false,
+  "active_header_layout_verified": false,
+  "actual_modules_library_api_symbols_verified": false,
+  "native_recompile_verified": false,
+  "link_allowed": false
+}

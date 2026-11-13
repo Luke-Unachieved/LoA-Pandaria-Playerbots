@@ -44,3 +44,17 @@ LoA native Engine, existing class/action execution, Group/LFG, V14 raid constrai
 Parent verified the first Engine object compiled in20.99seconds, SHA256 `ff8988a2fe1890ac53358bfa9430de21ccf9df23ae5ac47b2173557083b705ac`. The second PlayerbotAI compilation then failed at InterruptObserver.h:3 because its original V14 response did not include the V15 cast-receipt directory. This is a real compiler result, not a fixture.
 
 The compile plan now explicitly adds the original V15 cast-receipts/action-runtime and V11 pending-attempt native directories for all15jobs and checks eight exact native header hashes. No duplicated CastReceipt header copies are introduced: the authority's explicit relative imports and all new bare imports must resolve to the same original native files. This also preserves the source-local V11 WarshamanWindow/PendingAttempt pair when the coordinated interrupt TU is staged elsewhere; it must not silently resolve the older V7 window header. New observer/dependency headers remain first. Existing source/patch/final hashes and all formal binaries are unchanged by this build-only correction. Later TU/compiler results remain unverified.
+
+## Resume only the final scheduler unit after14native successes
+
+The parent reports14/15actual MSVC units passed. The final scheduler hit a missing Creature declaration in a legacy condition include chain and used an older PlayerbotMgr.h without the two native ownership APIs. The corrected scheduler declares the actual Creature type and explicitly includes the verified **one-file** native-api/PlayerbotMgr.h before the old include chain. It retains IsRaidOwnedBot and IsManagedLogin checks, and does not replace the full Manager include directory.
+
+The compiler entry now supports selective resume:
+
+```powershell
+& "$nativeCandidate\windows-incremental-v18\Build-Incremental.ps1" -PlanPath "$nativeCandidate\integrated-v18\v18-compile-plan.json" -SourceRoot "$nativeCandidate\integrated-v18" -OutputRoot 'E:\WRL-1112v1\RuntimeCheck-v1\LearningShadow-v18\build-v18' -Compile -OnlyJob NativeBackgroundTraining
+```
+
+It retains the other14successful native results only after checking their source SHA, actual object SHA and exact compiler-response SHA against the existing receipt/files. Their objects and responses are not rewritten or recompiled. The selected result is merged back into compile-results.json; all15successful entries remain required for linking.
+
+Binding header49050...is supplied with matching source263fed...but those facts do not prove the actual linked modules.lib has the matching implementations. Before linking, inspect the exact active modules.lib with dumpbin /linkermember:2 for IsRaidOwnedBot and IsManagedLogin definitions, and compare the active old PlayerbotHolder layout/type aliases/base/virtuals with the bound header. No copied stub implementations or removed guards are acceptable. The current native-api/binding-status.json explicitly leaves these native proofs pending. The single-object compile can proceed while this read-only audit is performed.

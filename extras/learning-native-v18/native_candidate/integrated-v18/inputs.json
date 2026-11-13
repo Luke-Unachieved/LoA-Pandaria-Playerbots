@@ -115,7 +115,7 @@
     },
     {
       "path": "new/NativeBackgroundTraining.cpp",
-      "sha256": "c0bd50280300df7bb768eefdfb9e9ad971b900a6e0c1f88376ec1330a3516249"
+      "sha256": "39e90fe72ccf032374c70e1db681b6ada46b0d09d23566e1297d8abd0f164dba"
     },
     {
       "path": "new/NativeBackgroundTraining.h",
@@ -156,6 +156,10 @@
     {
       "path": "new/deps/team-coordination-v15/TeamReservationBook.h",
       "sha256": "f0e35eb451b747534c375f1d57443a73fef4508886e9e59d7532c370ce16c02b"
+    },
+    {
+      "path": "native-api/PlayerbotMgr.h",
+      "sha256": "49050bb78713278eee9b0f2513b3b2ba7cf7c37c4852b1ed3835faf35aa79a5a"
     }
   ],
   "patch_sha256": "1adbc024db23e77e8ad703ad7d632cc456986508c890c6aa4828cb88c44afadd",
